@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-8">
+    <div>
+        <h1 class="text-3xl font-bold mb-2">GPT migrieren</h1>
+        <p class="text-gray-400">Lade deine ChatGPT Custom-GPT JSON hoch und wähle das Ziel.</p>
+    </div>
+
+    <form action="/migrate" method="post" enctype="multipart/form-data" class="space-y-6">
+
+        <!-- Datei-Upload -->
+        <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">JSON-Datei(en)</label>
+            <input
+                type="file"
+                name="json_file"
+                accept=".json"
+                required
+                class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
+            >
+        </div>
+
+        <!-- Ziel-Auswahl -->
+        <div>
+            <label class="block text-sm font-medium text-gray-300 mb-3">Zielplattform(en)</label>
+            <div class="grid grid-cols-2 gap-3">
+                {% for target in targets %}
+                <label class="flex items-center space-x-3 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-500 transition">
+                    <input type="checkbox" name="targets" value="{{ target }}" class="rounded text-blue-600 bg-gray-800 border-gray-600">
+                    <span class="capitalize">{{ target }}</span>
+                </label>
+                {% endfor %}
+                <label class="flex items-center space-x-3 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-500 transition col-span-2">
+                    <input type="checkbox" name="targets" value="all" class="rounded text-blue-600 bg-gray-800 border-gray-600">
+                    <span class="font-semibold">Alle auf einmal</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Modus -->
+        <div>
+            <label class="block text-sm font-medium text-gray-300 mb-3">Modus</label>
+            <div class="flex gap-4">
+                <label class="flex items-center space-x-3 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-500 transition flex-1">
+                    <input type="radio" name="mode" value="quick" checked class="text-blue-600 bg-gray-800 border-gray-600">
+                    <div>
+                        <span class="font-medium">1:1 Transfer</span>
+                        <p class="text-xs text-gray-500">Direkte Konvertierung ohne KI</p>
+                    </div>
+                </label>
+                <label class="flex items-center space-x-3 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-500 transition flex-1">
+                    <input type="radio" name="mode" value="optimized" class="text-blue-600 bg-gray-800 border-gray-600">
+                    <div>
+                        <span class="font-medium">KI-optimiert</span>
+                        <p class="text-xs text-gray-500">Via Claude optimiert (braucht API-Key)</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition">
+            Migrieren
+        </button>
+    </form>
+</div>
+{% endblock %}

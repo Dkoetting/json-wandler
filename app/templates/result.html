@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-8">
+
+    {% if error %}
+    <div class="bg-red-900/50 border border-red-700 rounded-lg px-6 py-4">
+        <p class="text-red-300">{{ error }}</p>
+    </div>
+    {% else %}
+    <div>
+        <h1 class="text-3xl font-bold mb-2">Ergebnis</h1>
+        <p class="text-gray-400">Migration von <span class="text-white font-semibold">{{ gpt_name }}</span> abgeschlossen.</p>
+    </div>
+
+    <div class="space-y-4">
+        {% for r in results %}
+        <div class="bg-gray-900 border border-gray-700 rounded-lg px-6 py-4 flex items-center justify-between">
+            <div>
+                <span class="capitalize font-medium">{{ r.target }}</span>
+                <span class="text-sm text-gray-500 ml-2">({{ r.mode }})</span>
+                {% if r.status == "success" %}
+                <span class="ml-2 text-green-400 text-sm">Erfolgreich</span>
+                {% else %}
+                <span class="ml-2 text-red-400 text-sm">Fehler: {{ r.error_message }}</span>
+                {% endif %}
+                {% if r.tokens_input > 0 %}
+                <span class="ml-2 text-xs text-gray-600">{{ r.tokens_input }}+{{ r.tokens_output }} tokens</span>
+                {% endif %}
+            </div>
+            {% if r.status == "success" %}
+            <a href="/download/{{ r.output_path.split('/')[-1].split('\\')[-1] }}"
+               class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 px-4 rounded transition">
+                Download
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="flex gap-4">
+        <a href="/" class="bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-lg transition">
+            Neuen JSON hochladen
+        </a>
+    </div>
+</div>
+{% endblock %}
