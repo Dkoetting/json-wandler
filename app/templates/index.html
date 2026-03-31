@@ -60,6 +60,13 @@ header{background:var(--color-surface);border-bottom:1px solid var(--color-divid
 .header-actions{display:flex;align-items:center;gap:var(--space-3)}
 .btn-icon{width:36px;height:36px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);transition:background var(--transition-interactive),color var(--transition-interactive)}
 .btn-icon:hover{background:var(--color-surface-offset);color:var(--color-text)}
+
+/* Language Toggle */
+.lang-toggle{display:flex;align-items:center;gap:4px;background:var(--color-surface-offset);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:3px}
+.lang-btn{padding:3px 10px;border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:700;letter-spacing:.04em;color:var(--color-text-muted);border:none;background:transparent;cursor:pointer;transition:all var(--transition-interactive)}
+.lang-btn.active{background:var(--color-primary);color:#fff;box-shadow:var(--shadow-sm)}
+.lang-btn:hover:not(.active){color:var(--color-text);background:var(--color-surface-dynamic)}
+
 main{display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:1400px;margin:0 auto;width:100%;padding:var(--space-8) var(--space-6);gap:var(--space-6)}
 @media(max-width:900px){main{grid-template-columns:1fr}}
 
@@ -159,15 +166,23 @@ select option{background:var(--color-surface)}
       <img src="/static/logo-kn.png" alt="k &amp; n edv konzepte gmbh" style="height:40px;width:auto;object-fit:contain"/>
     </div>
 
-    <!-- Mitte: Titel + Theme Toggle -->
+    <!-- Mitte: Titel + Controls -->
     <div style="display:flex;align-items:center;gap:var(--space-4);flex:1;justify-content:center">
       <div style="text-align:center">
         <div class="logo-text">JSON Wandler</div>
-        <div class="logo-sub">cGPT &rarr; Claude / Gemini / Grok / Perplexity</div>
+        <div class="logo-sub" id="headerSubtitle">cGPT &rarr; Claude / Gemini / Grok / Perplexity</div>
       </div>
-      <button class="btn-icon" data-theme-toggle aria-label="Farbschema wechseln">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
+      <div style="display:flex;align-items:center;gap:var(--space-2)">
+        <!-- DE/EN Language Toggle -->
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button id="langDe" class="lang-btn active" onclick="setLang('de')">DE</button>
+          <button id="langEn" class="lang-btn" onclick="setLang('en')">EN</button>
+        </div>
+        <!-- Theme Toggle -->
+        <button class="btn-icon" data-theme-toggle aria-label="Farbschema wechseln">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- Dr.DirKInstitute Logo (rechts) -->
@@ -182,11 +197,11 @@ select option{background:var(--color-surface)}
       <div class="panel-header">
         <div class="panel-title">
           <svg class="panel-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h12M4 10h12M4 14h8"/></svg>
-          Input — ChatGPT JSON
+          <span id="panelInputTitle">Input — ChatGPT JSON</span>
         </div>
         <div style="display:flex;gap:var(--space-2)">
-          <button class="btn btn-secondary btn-sm" onclick="loadSample('cgpt')">cGPT Beispiel</button>
-          <button class="btn btn-secondary btn-sm" onclick="loadSample('project')">Projekt Beispiel</button>
+          <button class="btn btn-secondary btn-sm" id="btnSampleCgpt" onclick="loadSample('cgpt')">cGPT Beispiel</button>
+          <button class="btn btn-secondary btn-sm" id="btnSampleProject" onclick="loadSample('project')">Projekt Beispiel</button>
         </div>
       </div>
       <div class="panel-body">
@@ -196,7 +211,7 @@ select option{background:var(--color-surface)}
           <div class="api-key-header" onclick="toggleApiKey()">
             <div class="api-key-title">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-              KI-API Konfiguration
+              <span id="apiTitle">KI-API Konfiguration</span>
             </div>
             <div style="display:flex;align-items:center;gap:var(--space-2)">
               <div id="apiIndicator" class="api-key-indicator"></div>
@@ -210,38 +225,38 @@ select option{background:var(--color-surface)}
             </div>
             <div class="input-row">
               <input type="password" id="apiKeyInput" placeholder="sk-..." autocomplete="off"/>
-              <button class="btn btn-primary btn-sm" onclick="saveApiKey()">Speichern</button>
+              <button class="btn btn-primary btn-sm" id="btnApiSave" onclick="saveApiKey()">Speichern</button>
               <button class="btn btn-danger btn-sm" onclick="clearApiKey()">&times;</button>
             </div>
             <p class="hint" id="apiHint">
-              OpenAI API Key — <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>
-              Der Key bleibt nur im Browser (Memory) — wird nie gespeichert oder &uuml;bertragen.
+              OpenAI API Key &mdash; <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>
+              Modell: gpt-4o. Der Key bleibt nur im Browser-Memory.
             </p>
           </div>
         </div>
 
         <!-- TARGET PLATFORM -->
         <div class="field-group">
-          <label>Ziel-Plattform</label>
+          <label id="platformLabel">Ziel-Plattform</label>
           <div class="platform-grid">
             <button class="platform-btn active" onclick="selectPlatform('claude',this)">
               <div class="platform-name">Claude Skill</div>
-              <div class="platform-desc">Anthropic Claude — strukturierter System Prompt als Skill/Project</div>
+              <div class="platform-desc" id="descClaude">Anthropic Claude — strukturierter System Prompt als Skill/Project</div>
               <div class="platform-badge badge-claude">Anthropic</div>
             </button>
             <button class="platform-btn" onclick="selectPlatform('gemini',this)">
               <div class="platform-name">Gemini Gem</div>
-              <div class="platform-desc">Google Gemini — Custom Gem mit Persona &amp; Instruktionen</div>
+              <div class="platform-desc" id="descGemini">Google Gemini — Custom Gem mit Persona &amp; Instruktionen</div>
               <div class="platform-badge badge-gemini">Google</div>
             </button>
             <button class="platform-btn" onclick="selectPlatform('grok',this)">
               <div class="platform-name">Grok System</div>
-              <div class="platform-desc">xAI Grok — System Prompt mit Grok-spezifischen Konventionen</div>
+              <div class="platform-desc" id="descGrok">xAI Grok — System Prompt mit Grok-spezifischen Konventionen</div>
               <div class="platform-badge badge-grok">xAI</div>
             </button>
             <button class="platform-btn" onclick="selectPlatform('perplexity',this)">
               <div class="platform-name">Perplexity Space</div>
-              <div class="platform-desc">Perplexity AI — Space Instructions mit Fokus auf Recherche</div>
+              <div class="platform-desc" id="descPerplexity">Perplexity AI — Space Instructions mit Fokus auf Recherche</div>
               <div class="platform-badge badge-perplexity">Perplexity</div>
             </button>
           </div>
@@ -250,27 +265,29 @@ select option{background:var(--color-surface)}
         <!-- JSON INPUT -->
         <div class="field-group">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);flex-wrap:wrap;gap:var(--space-2)">
-            <label style="margin:0">JSON Input (cGPT oder Projekt)</label>
+            <label style="margin:0" id="jsonInputLabel">JSON Input (cGPT oder Projekt)</label>
             <div style="display:flex;gap:var(--space-2)">
-              <button class="btn btn-secondary btn-sm" onclick="uploadJsonFile()" title="JSON-Datei vom Computer laden">
+              <button class="btn btn-secondary btn-sm" id="btnJsonFile" onclick="uploadJsonFile()" title="JSON-Datei vom Computer laden">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                JSON-Datei
+                <span>JSON-Datei</span>
               </button>
-              <button class="btn btn-secondary btn-sm" onclick="pasteFromClipboard()" title="JSON aus Zwischenablage einf&uuml;gen">
+              <button class="btn btn-secondary btn-sm" id="btnPaste" onclick="pasteFromClipboard()" title="JSON aus Zwischenablage einf&uuml;gen">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M17 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
-                Einf&uuml;gen
+                <span>Einf&uuml;gen</span>
               </button>
             </div>
           </div>
           <input type="file" id="jsonFileInput" accept=".json,application/json" style="display:none" onchange="handleJsonFile(event)">
-          <textarea id="jsonInput" placeholder='F&uuml;ge dein ChatGPT JSON hier ein...&#10;&#10;z.B.:&#10;{&#10;  "name": "TrainingsDesigner",&#10;  "system_prompt": "...",&#10;  "capabilities": ["Web Search"]&#10;}'></textarea>
+          <textarea id="jsonInput" placeholder="F&uuml;ge dein ChatGPT JSON hier ein...&#10;&#10;z.B.:&#10;{&#10;  &quot;name&quot;: &quot;TrainingsDesigner&quot;,&#10;  &quot;system_prompt&quot;: &quot;...&quot;,&#10;  &quot;capabilities&quot;: [&quot;Web Search&quot;]&#10;}"></textarea>
         </div>
 
         <!-- BEST PRACTICES TOGGLE -->
         <div>
           <button class="practices-toggle" onclick="togglePractices()" id="practicesBtn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-            Best Practices f&uuml;r <span id="currentPlatformLabel">Claude</span> anzeigen
+            <span id="practicesTogglePre">Best Practices f&uuml;r</span>
+            <span id="currentPlatformLabel">Claude</span>
+            <span id="practicesTogglePost">anzeigen</span>
             <svg id="practicesIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .2s"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           <div id="practicesBody" class="practices-body"></div>
@@ -278,7 +295,7 @@ select option{background:var(--color-surface)}
 
         <button class="btn btn-primary" id="transformBtn" onclick="transform()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
-          Transformieren
+          <span id="transformBtnLabel">Transformieren</span>
         </button>
 
       </div>
@@ -289,7 +306,7 @@ select option{background:var(--color-surface)}
       <div class="panel-header">
         <div class="panel-title">
           <svg class="panel-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 3H7a2 2 0 0 0-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V5a2 2 0 0 0-2-2z"/></svg>
-          Output — Transformiertes Format
+          <span id="panelOutputTitle">Output — Transformiertes Format</span>
         </div>
         <div id="outputPlatformBadge" style="display:none"></div>
       </div>
@@ -302,8 +319,8 @@ select option{background:var(--color-surface)}
               <path d="M12 14h16M12 20h10M12 26h8"/>
               <path d="M26 22l6 6M30 22l-4 4" stroke-width="2"/>
             </svg>
-            <div>Transformiertes Format erscheint hier</div>
-            <div style="font-size:var(--text-xs);color:var(--color-text-faint);max-width:280px;text-align:center">W&auml;hle eine Plattform, f&uuml;ge JSON ein und klicke <strong>Transformieren</strong></div>
+            <div id="emptyStateTitle">Transformiertes Format erscheint hier</div>
+            <div id="emptyStateHint" style="font-size:var(--text-xs);color:var(--color-text-faint);max-width:280px;text-align:center">W&auml;hle eine Plattform, f&uuml;ge JSON ein und klicke <strong>Transformieren</strong></div>
           </div>
           <pre class="output-area" id="outputArea" style="display:none"></pre>
         </div>
@@ -311,14 +328,14 @@ select option{background:var(--color-surface)}
         <div class="output-actions" id="outputActions" style="display:none">
           <button class="btn btn-primary btn-sm" onclick="copyOutput()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Kopieren
+            <span id="btnCopy">Kopieren</span>
           </button>
           <button class="btn btn-secondary btn-sm" onclick="downloadOutput()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            Download
+            <span id="btnDownload">Download</span>
           </button>
           <button class="btn btn-ghost btn-sm" onclick="clearAll()">
-            Zur&uuml;cksetzen
+            <span id="btnReset">Zur&uuml;cksetzen</span>
           </button>
         </div>
 
@@ -331,43 +348,250 @@ select option{background:var(--color-surface)}
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-let state = { platform: 'claude', apiKey: null, apiProvider: 'openai', output: null };
-
-const bestPractices = {
-  claude: [
-    { title: 'Klare Rollendefinition', desc: 'Claude Skills beginnen mit einer expliziten Rollenbeschreibung: "Du bist ein spezialisierter Assistent f\u00fcr..."' },
-    { title: 'XML-Tags f\u00fcr Struktur', desc: 'Nutze <instructions>, <context>, <examples> als Strukturierungselemente im System Prompt.' },
-    { title: 'Konstitutionelle Grenzen', desc: 'Definiere explizit, was der Skill NICHT tut. Claude folgt negativen Grenzen sehr pr\u00e4zise.' },
-    { title: 'Reasoning aktivieren', desc: 'F\u00fcge "Denke Schritt f\u00fcr Schritt" oder "Analysiere erst, dann antworte" f\u00fcr komplexe Aufgaben ein.' },
-    { title: 'Keine Plugin-Referenzen', desc: 'ChatGPT-spezifische Funktionen (DALL-E, Browsing-Buttons) m\u00fcssen entfernt oder abstrahiert werden.' },
-  ],
-  gemini: [
-    { title: 'Persona & Name', desc: 'Gemini Gems erwarten eine klar benannte Persona mit definierten Charaktereigenschaften.' },
-    { title: 'Google-Integration', desc: 'Nutze explizit Google-Tools: Google Search, Google Workspace-Referenzen wenn relevant.' },
-    { title: 'Multimodal beschreiben', desc: 'Gemini versteht Bilder, Audio, Video \u2014 erw\u00e4hne explizit welche Modalit\u00e4ten der Gem nutzen soll.' },
-    { title: 'Markdown strukturiert', desc: 'Gemini rendert Markdown gut \u2014 nutze \u00dcberschriften, Listen und Bold f\u00fcr strukturierte Outputs.' },
-    { title: 'Sprachkonsistenz', desc: 'Definiere die Ausgabesprache explizit, da Gemini bei gemischten Prompts die Sprache wechseln kann.' },
-  ],
-  grok: [
-    { title: 'Direkter, klarer Stil', desc: 'Grok bevorzugt direkte, pr\u00e4gnante Instruktionen ohne \u00fcberm\u00e4\u00dfige H\u00f6flichkeitsfloskeln.' },
-    { title: 'Realtime-Wissen nutzen', desc: 'Grok hat Zugriff auf aktuelle X/Twitter-Daten \u2014 nutze dies f\u00fcr zeitkritische Anwendungen.' },
-    { title: 'Humor-Param optional', desc: 'Grok unterst\u00fctzt einen humorvollen Modus \u2014 definiere ob der Skill ernst oder locker sein soll.' },
-    { title: 'Keine langen Preambles', desc: 'Grok reagiert besser auf kurze, klare Instruktionen als auf lange, verschachtelte Prompts.' },
-    { title: 'X-Kontext', desc: 'Wenn relevant: definiere ob der Skill X-Posts, Threads oder Community-Notes einbeziehen soll.' },
-  ],
-  perplexity: [
-    { title: 'Recherche-Fokus', desc: 'Perplexity Spaces sind Research-optimiert \u2014 stelle Instruktionen auf Quellensuche und Fakten-Verifikation aus.' },
-    { title: 'Quellen-Anforderungen', desc: 'Definiere explizit: "Zitiere immer Quellen", "Bevorzuge wissenschaftliche Quellen", "Aktuelle Quellen bevorzugen".' },
-    { title: 'Zusammenfassungsformat', desc: 'Perplexity strukturiert gerne: Kurzzusammenfassung \u2192 Details \u2192 Quellen. Nutze dieses Format.' },
-    { title: 'Keine Halluzinations-Prompts', desc: 'Vermeide Prompts die Kreativit\u00e4t \u00fcber Faktentreue stellen \u2014 Perplexity ist kein Kreativ-LLM.' },
-    { title: 'Focus Mode', desc: 'Definiere den Suchfokus: Web, Academic, YouTube, Reddit je nach Anwendungsfall.' },
-  ]
+/* ── Translations ──────────────────────────────────────────────────────── */
+const TEXTS = {
+  de: {
+    subtitle:          'cGPT \u2192 Claude / Gemini / Grok / Perplexity',
+    panelInput:        'Input \u2014 ChatGPT JSON',
+    panelOutput:       'Output \u2014 Transformiertes Format',
+    sampleCgpt:        'cGPT Beispiel',
+    sampleProject:     'Projekt Beispiel',
+    apiTitle:          'KI-API Konfiguration',
+    apiSave:           'Speichern',
+    platformLabel:     'Ziel-Plattform',
+    claudeDesc:        'Anthropic Claude \u2014 strukturierter System Prompt als Skill/Project',
+    geminiDesc:        'Google Gemini \u2014 Custom Gem mit Persona & Instruktionen',
+    grokDesc:          'xAI Grok \u2014 System Prompt mit Grok-spezifischen Konventionen',
+    perplexityDesc:    'Perplexity AI \u2014 Space Instructions mit Fokus auf Recherche',
+    jsonInputLabel:    'JSON Input (cGPT oder Projekt)',
+    jsonFileBtnTitle:  'JSON-Datei vom Computer laden',
+    jsonFileBtn:       'JSON-Datei',
+    pasteBtnTitle:     'JSON aus Zwischenablage einf\u00fcgen',
+    pasteBtn:          'Einf\u00fcgen',
+    jsonPlaceholder:   'F\u00fcge dein ChatGPT JSON hier ein...\n\nz.B.:\n{\n  "name": "TrainingsDesigner",\n  "system_prompt": "...",\n  "capabilities": ["Web Search"]\n}',
+    practicesPre:      'Best Practices f\u00fcr',
+    practicesPost:     'anzeigen',
+    transformBtn:      'Transformieren',
+    transformingBtn:   'Transformiere\u2026',
+    emptyTitle:        'Transformiertes Format erscheint hier',
+    emptyHint:         'W\u00e4hle eine Plattform, f\u00fcge JSON ein und klicke',
+    emptyHintStrong:   'Transformieren',
+    btnCopy:           'Kopieren',
+    btnDownload:       'Download',
+    btnReset:          'Zur\u00fccksetzen',
+    /* Dynamic messages */
+    noJson:            'Kein JSON eingef\u00fcgt',
+    noApiKey:          'Kein API Key eingegeben',
+    apiSaved:          'API Key gespeichert (nur im Speicher)',
+    apiCleared:        'API Key gel\u00f6scht',
+    jsonRepaired:      'JSON automatisch repariert',
+    copied:            'In Zwischenablage kopiert',
+    copyFailed:        'Kopieren fehlgeschlagen',
+    downloadStarted:   'Download gestartet',
+    resetDone:         'Zur\u00fcckgesetzt',
+    emptyClipboard:    'Zwischenablage ist leer',
+    pasteHint:         'Bitte Ctrl+V zum Einf\u00fcgen verwenden',
+    fileLoaded:        'Datei geladen',
+    fileLoadedRepaired:'Datei geladen & JSON repariert',
+    fileTypeError:     'Bitte eine .json Datei ausw\u00e4hlen.',
+    fileReadError:     'Datei konnte nicht gelesen werden.',
+    jsonRepairFailed:  function(e){ return 'JSON konnte nicht repariert werden: ' + e; },
+    notValidJson:      'Text eingef\u00fcgt (kein valides JSON \u2014 bitte pr\u00fcfen)',
+    transformingAI:    function(p){ return 'KI-Transformation via ' + p + '\u2026'; },
+    transformingRules: 'Regelbasierte Transformation (kein API Key)\u2026',
+    successTransform:  function(p, k){ return 'Erfolgreich transformiert \u2192 ' + p + (k ? '' : ' (regelbasiert \u2014 API Key f\u00fcr KI-Optimierung)'); },
+    apiError:          function(m){ return 'Fehler: ' + m; },
+    apiKeyInvalid:     'API Key ung\u00fcltig oder abgelaufen',
+    sampleLoaded:      function(t){ return t + ' Beispiel geladen'; },
+    hintOpenAI:        'OpenAI API Key \u2014 <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>Modell: gpt-4o. Der Key bleibt nur im Browser-Memory.',
+    hintAnthropic:     'Anthropic API Key \u2014 <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a><br>Modell: claude-sonnet-4. Der Key bleibt nur im Browser-Memory.',
+  },
+  en: {
+    subtitle:          'cGPT \u2192 Claude / Gemini / Grok / Perplexity',
+    panelInput:        'Input \u2014 ChatGPT JSON',
+    panelOutput:       'Output \u2014 Transformed Format',
+    sampleCgpt:        'cGPT Sample',
+    sampleProject:     'Project Sample',
+    apiTitle:          'AI API Configuration',
+    apiSave:           'Save',
+    platformLabel:     'Target Platform',
+    claudeDesc:        'Anthropic Claude \u2014 structured system prompt as Skill/Project',
+    geminiDesc:        'Google Gemini \u2014 Custom Gem with persona & instructions',
+    grokDesc:          'xAI Grok \u2014 System prompt with Grok-specific conventions',
+    perplexityDesc:    'Perplexity AI \u2014 Space Instructions focused on research',
+    jsonInputLabel:    'JSON Input (cGPT or Project)',
+    jsonFileBtnTitle:  'Load JSON file from computer',
+    jsonFileBtn:       'JSON File',
+    pasteBtnTitle:     'Paste JSON from clipboard',
+    pasteBtn:          'Paste',
+    jsonPlaceholder:   'Paste your ChatGPT JSON here...\n\ne.g.:\n{\n  "name": "TrainingDesigner",\n  "system_prompt": "...",\n  "capabilities": ["Web Search"]\n}',
+    practicesPre:      'Show Best Practices for',
+    practicesPost:     '',
+    transformBtn:      'Transform',
+    transformingBtn:   'Transforming\u2026',
+    emptyTitle:        'Transformed format appears here',
+    emptyHint:         'Choose a platform, paste JSON, and click',
+    emptyHintStrong:   'Transform',
+    btnCopy:           'Copy',
+    btnDownload:       'Download',
+    btnReset:          'Reset',
+    /* Dynamic messages */
+    noJson:            'No JSON inserted',
+    noApiKey:          'No API key entered',
+    apiSaved:          'API key saved (memory only)',
+    apiCleared:        'API key cleared',
+    jsonRepaired:      'JSON automatically repaired',
+    copied:            'Copied to clipboard',
+    copyFailed:        'Copy failed',
+    downloadStarted:   'Download started',
+    resetDone:         'Reset',
+    emptyClipboard:    'Clipboard is empty',
+    pasteHint:         'Please use Ctrl+V to paste',
+    fileLoaded:        'File loaded',
+    fileLoadedRepaired:'File loaded & JSON repaired',
+    fileTypeError:     'Please select a .json file.',
+    fileReadError:     'File could not be read.',
+    jsonRepairFailed:  function(e){ return 'JSON could not be repaired: ' + e; },
+    notValidJson:      'Text pasted (not valid JSON \u2014 please check)',
+    transformingAI:    function(p){ return 'AI transformation via ' + p + '\u2026'; },
+    transformingRules: 'Rule-based transformation (no API key)\u2026',
+    successTransform:  function(p, k){ return 'Successfully transformed \u2192 ' + p + (k ? '' : ' (rule-based \u2014 add API key for AI optimization)'); },
+    apiError:          function(m){ return 'Error: ' + m; },
+    apiKeyInvalid:     'API key invalid or expired',
+    sampleLoaded:      function(t){ return t + ' sample loaded'; },
+    hintOpenAI:        'OpenAI API Key \u2014 <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>Model: gpt-4o. Key is stored in browser memory only.',
+    hintAnthropic:     'Anthropic API Key \u2014 <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a><br>Model: claude-sonnet-4. Key is stored in browser memory only.',
+  }
 };
 
-const platformLabels = { claude: 'Claude', gemini: 'Gemini', grok: 'Grok', perplexity: 'Perplexity' };
-const platformColors = { claude: 'badge-claude', gemini: 'badge-gemini', grok: 'badge-grok', perplexity: 'badge-perplexity' };
+/* ── Best Practices (bilingual) ────────────────────────────────────────── */
+const bestPracticesAll = {
+  de: {
+    claude: [
+      { title: 'Klare Rollendefinition',    desc: 'Claude Skills beginnen mit einer expliziten Rollenbeschreibung: \u201eDu bist ein spezialisierter Assistent f\u00fcr\u2026\u201c' },
+      { title: 'XML-Tags f\u00fcr Struktur', desc: 'Nutze <instructions>, <context>, <examples> als Strukturierungselemente im System Prompt.' },
+      { title: 'Konstitutionelle Grenzen',  desc: 'Definiere explizit, was der Skill NICHT tut. Claude folgt negativen Grenzen sehr pr\u00e4zise.' },
+      { title: 'Reasoning aktivieren',      desc: 'F\u00fcge \u201eDenke Schritt f\u00fcr Schritt\u201c oder \u201eAnalysiere erst, dann antworte\u201c f\u00fcr komplexe Aufgaben ein.' },
+      { title: 'Keine Plugin-Referenzen',   desc: 'ChatGPT-spezifische Funktionen (DALL-E, Browsing-Buttons) m\u00fcssen entfernt oder abstrahiert werden.' },
+    ],
+    gemini: [
+      { title: 'Persona & Name',          desc: 'Gemini Gems erwarten eine klar benannte Persona mit definierten Charaktereigenschaften.' },
+      { title: 'Google-Integration',      desc: 'Nutze explizit Google-Tools: Google Search, Google Workspace-Referenzen wenn relevant.' },
+      { title: 'Multimodal beschreiben',  desc: 'Gemini versteht Bilder, Audio, Video \u2014 erw\u00e4hne explizit welche Modalit\u00e4ten der Gem nutzen soll.' },
+      { title: 'Markdown strukturiert',   desc: 'Gemini rendert Markdown gut \u2014 nutze \u00dcberschriften, Listen und Bold f\u00fcr strukturierte Outputs.' },
+      { title: 'Sprachkonsistenz',        desc: 'Definiere die Ausgabesprache explizit, da Gemini bei gemischten Prompts die Sprache wechseln kann.' },
+    ],
+    grok: [
+      { title: 'Direkter, klarer Stil',   desc: 'Grok bevorzugt direkte, pr\u00e4gnante Instruktionen ohne \u00fcberm\u00e4\u00dfige H\u00f6flichkeitsfloskeln.' },
+      { title: 'Realtime-Wissen nutzen',  desc: 'Grok hat Zugriff auf aktuelle X/Twitter-Daten \u2014 nutze dies f\u00fcr zeitkritische Anwendungen.' },
+      { title: 'Humor-Param optional',    desc: 'Grok unterst\u00fctzt einen humorvollen Modus \u2014 definiere ob der Skill ernst oder locker sein soll.' },
+      { title: 'Keine langen Preambles',  desc: 'Grok reagiert besser auf kurze, klare Instruktionen als auf lange, verschachtelte Prompts.' },
+      { title: 'X-Kontext',               desc: 'Wenn relevant: definiere ob der Skill X-Posts, Threads oder Community-Notes einbeziehen soll.' },
+    ],
+    perplexity: [
+      { title: 'Recherche-Fokus',              desc: 'Perplexity Spaces sind Research-optimiert \u2014 stelle Instruktionen auf Quellensuche und Fakten-Verifikation aus.' },
+      { title: 'Quellen-Anforderungen',        desc: 'Definiere explizit: \u201eZitiere immer Quellen\u201c, \u201eBevorzuge wissenschaftliche Quellen\u201c, \u201eAktuelle Quellen bevorzugen\u201c.' },
+      { title: 'Zusammenfassungsformat',       desc: 'Perplexity strukturiert gerne: Kurzzusammenfassung \u2192 Details \u2192 Quellen. Nutze dieses Format.' },
+      { title: 'Keine Halluzinations-Prompts', desc: 'Vermeide Prompts die Kreativit\u00e4t \u00fcber Faktentreue stellen \u2014 Perplexity ist kein Kreativ-LLM.' },
+      { title: 'Focus Mode',                   desc: 'Definiere den Suchfokus: Web, Academic, YouTube, Reddit je nach Anwendungsfall.' },
+    ]
+  },
+  en: {
+    claude: [
+      { title: 'Clear Role Definition',    desc: 'Claude Skills start with an explicit role description: \u201cYou are a specialized assistant for\u2026\u201d' },
+      { title: 'XML Tags for Structure',   desc: 'Use <instructions>, <context>, <examples> as structural elements in the system prompt.' },
+      { title: 'Constitutional Constraints', desc: 'Explicitly define what the skill does NOT do. Claude follows negative constraints very precisely.' },
+      { title: 'Enable Reasoning',         desc: 'Add \u201cThink step by step\u201d or \u201cAnalyze first, then respond\u201d for complex tasks.' },
+      { title: 'No Plugin References',     desc: 'ChatGPT-specific features (DALL-E, browsing buttons) must be removed or abstracted.' },
+    ],
+    gemini: [
+      { title: 'Persona & Name',           desc: 'Gemini Gems expect a clearly named persona with defined character traits.' },
+      { title: 'Google Integration',       desc: 'Explicitly use Google tools: Google Search, Google Workspace references when relevant.' },
+      { title: 'Describe Multimodal',      desc: 'Gemini understands images, audio, video \u2014 explicitly mention which modalities the Gem should use.' },
+      { title: 'Markdown Structured',      desc: 'Gemini renders Markdown well \u2014 use headings, lists and bold for structured outputs.' },
+      { title: 'Language Consistency',     desc: 'Define the output language explicitly, as Gemini may switch languages with mixed prompts.' },
+    ],
+    grok: [
+      { title: 'Direct, Clear Style',      desc: 'Grok prefers direct, concise instructions without excessive pleasantries.' },
+      { title: 'Use Realtime Knowledge',   desc: 'Grok has access to current X/Twitter data \u2014 use this for time-critical applications.' },
+      { title: 'Humor Param Optional',     desc: 'Grok supports a humorous mode \u2014 define whether the skill should be serious or casual.' },
+      { title: 'No Long Preambles',        desc: 'Grok responds better to short, clear instructions than long, nested prompts.' },
+      { title: 'X Context',                desc: 'If relevant: define whether the skill should include X posts, threads or community notes.' },
+    ],
+    perplexity: [
+      { title: 'Research Focus',           desc: 'Perplexity Spaces are research-optimized \u2014 configure instructions for source search and fact verification.' },
+      { title: 'Source Requirements',      desc: 'Define explicitly: \u201cAlways cite sources\u201d, \u201cPrefer scientific sources\u201d, \u201cPrefer current sources\u201d.' },
+      { title: 'Summary Format',           desc: 'Perplexity structures well: Brief Summary \u2192 Details \u2192 Sources. Use this format.' },
+      { title: 'No Hallucination Prompts', desc: 'Avoid prompts that prioritize creativity over factual accuracy \u2014 Perplexity is not a creative LLM.' },
+      { title: 'Focus Mode',               desc: 'Define the search focus: Web, Academic, YouTube, Reddit depending on the use case.' },
+    ]
+  }
+};
 
-// THEME TOGGLE
+/* ── State ─────────────────────────────────────────────────────────────── */
+let state = { platform: 'claude', apiKey: null, apiProvider: 'openai', output: null, lang: 'de' };
+
+const platformLabels = { claude: 'Claude', gemini: 'Gemini', grok: 'Grok', perplexity: 'Perplexity' };
+const platformColors  = { claude: 'badge-claude', gemini: 'badge-gemini', grok: 'badge-grok', perplexity: 'badge-perplexity' };
+
+/* ── Language ──────────────────────────────────────────────────────────── */
+function setLang(lang) {
+  state.lang = lang;
+  document.documentElement.lang = lang;
+  applyLang();
+}
+
+function applyLang() {
+  const t = TEXTS[state.lang];
+  const l = state.lang;
+
+  /* Header */
+  document.getElementById('headerSubtitle').textContent = t.subtitle;
+  document.getElementById('langDe').classList.toggle('active', l === 'de');
+  document.getElementById('langEn').classList.toggle('active', l === 'en');
+
+  /* Input panel */
+  document.getElementById('panelInputTitle').textContent   = t.panelInput;
+  document.getElementById('btnSampleCgpt').textContent     = t.sampleCgpt;
+  document.getElementById('btnSampleProject').textContent  = t.sampleProject;
+  document.getElementById('apiTitle').textContent          = t.apiTitle;
+  document.getElementById('btnApiSave').textContent        = t.apiSave;
+  document.getElementById('platformLabel').textContent     = t.platformLabel;
+  document.getElementById('descClaude').textContent        = t.claudeDesc;
+  document.getElementById('descGemini').textContent        = t.geminiDesc;
+  document.getElementById('descGrok').textContent          = t.grokDesc;
+  document.getElementById('descPerplexity').textContent    = t.perplexityDesc;
+  document.getElementById('jsonInputLabel').textContent    = t.jsonInputLabel;
+  var jfBtn = document.getElementById('btnJsonFile');
+  jfBtn.title = t.jsonFileBtnTitle;
+  jfBtn.querySelector('span').textContent = t.jsonFileBtn;
+  var pbBtn = document.getElementById('btnPaste');
+  pbBtn.title = t.pasteBtnTitle;
+  pbBtn.querySelector('span').textContent = t.pasteBtn;
+  document.getElementById('jsonInput').placeholder        = t.jsonPlaceholder;
+  document.getElementById('practicesTogglePre').textContent = t.practicesPre;
+  document.getElementById('practicesTogglePost').textContent = t.practicesPost;
+  document.getElementById('transformBtnLabel').textContent = t.transformBtn;
+
+  /* Output panel */
+  document.getElementById('panelOutputTitle').textContent = t.panelOutput;
+  document.getElementById('emptyStateTitle').textContent  = t.emptyTitle;
+  var hint = document.getElementById('emptyStateHint');
+  hint.innerHTML = t.emptyHint + ' <strong>' + t.emptyHintStrong + '</strong>';
+  document.getElementById('btnCopy').textContent     = t.btnCopy;
+  document.getElementById('btnDownload').textContent = t.btnDownload;
+  document.getElementById('btnReset').textContent    = t.btnReset;
+
+  /* API hint (if provider is set) */
+  var apiHint = document.getElementById('apiHint');
+  var hints = { openai: t.hintOpenAI, anthropic: t.hintAnthropic };
+  apiHint.innerHTML = hints[state.apiProvider];
+
+  /* Re-render best practices */
+  updatePractices();
+}
+
+/* ── Theme ──────────────────────────────────────────────────────────────── */
 (function(){
   const t=document.querySelector('[data-theme-toggle]');
   const r=document.documentElement;
@@ -386,6 +610,7 @@ const platformColors = { claude: 'badge-claude', gemini: 'badge-gemini', grok: '
   }
 })();
 
+/* ── Platform ───────────────────────────────────────────────────────────── */
 function selectPlatform(p, btn) {
   state.platform = p;
   document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
@@ -394,6 +619,7 @@ function selectPlatform(p, btn) {
   updatePractices();
 }
 
+/* ── API Key ────────────────────────────────────────────────────────────── */
 function toggleApiKey() {
   const body = document.getElementById('apiKeyBody');
   const icon = document.getElementById('apiToggleIcon');
@@ -406,21 +632,19 @@ function setProvider(p, btn) {
   state.apiProvider = p;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const hints = {
-    openai: 'OpenAI API Key \u2014 <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>Modell: gpt-4o. Der Key bleibt nur im Browser-Memory.',
-    anthropic: 'Anthropic API Key \u2014 <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a><br>Modell: claude-sonnet-4. Der Key bleibt nur im Browser-Memory.'
-  };
+  const t = TEXTS[state.lang];
+  const hints = { openai: t.hintOpenAI, anthropic: t.hintAnthropic };
   document.getElementById('apiHint').innerHTML = hints[p];
   document.getElementById('apiKeyInput').placeholder = p === 'openai' ? 'sk-...' : 'sk-ant-...';
 }
 
 function saveApiKey() {
   const val = document.getElementById('apiKeyInput').value.trim();
-  if (!val) { showToast('Kein API Key eingegeben', 'error'); return; }
+  if (!val) { showToast(TEXTS[state.lang].noApiKey, 'error'); return; }
   state.apiKey = val;
   document.getElementById('apiIndicator').classList.add('set');
   document.getElementById('apiKeyInput').value = '';
-  showToast('API Key gespeichert (nur im Speicher)', 'success');
+  showToast(TEXTS[state.lang].apiSaved, 'success');
   toggleApiKey();
 }
 
@@ -428,9 +652,10 @@ function clearApiKey() {
   state.apiKey = null;
   document.getElementById('apiKeyInput').value = '';
   document.getElementById('apiIndicator').classList.remove('set');
-  showToast('API Key gel\u00f6scht', 'success');
+  showToast(TEXTS[state.lang].apiCleared, 'success');
 }
 
+/* ── Best Practices ─────────────────────────────────────────────────────── */
 function togglePractices() {
   const body = document.getElementById('practicesBody');
   const icon = document.getElementById('practicesIcon');
@@ -441,7 +666,7 @@ function togglePractices() {
 }
 
 function updatePractices() {
-  const practices = bestPractices[state.platform] || [];
+  var practices = (bestPracticesAll[state.lang] || bestPracticesAll.de)[state.platform] || [];
   const body = document.getElementById('practicesBody');
   body.innerHTML = practices.map(p => `
     <div class="practice-item">
@@ -451,6 +676,7 @@ function updatePractices() {
   `).join('');
 }
 
+/* ── Sample Data ────────────────────────────────────────────────────────── */
 function loadSample(type) {
   const samples = {
     cgpt: JSON.stringify({
@@ -477,9 +703,12 @@ function loadSample(type) {
     }, null, 2)
   };
   document.getElementById('jsonInput').value = samples[type];
-  showToast(`${type === 'cgpt' ? 'cGPT' : 'Projekt'} Beispiel geladen`, 'success');
+  const t = TEXTS[state.lang];
+  const label = type === 'cgpt' ? 'cGPT' : (state.lang === 'de' ? 'Projekt' : 'Project');
+  showToast(t.sampleLoaded(label), 'success');
 }
 
+/* ── Transform Prompt Builder ───────────────────────────────────────────── */
 function buildTransformPrompt(parsedJSON, platform) {
   const platformGuides = {
     claude: `Du bist ein Experte f\u00fcr Claude AI Skills und System Prompts.
@@ -545,6 +774,7 @@ ${JSON.stringify(parsedJSON, null, 2)}
 Erstelle jetzt den optimierten ${platformLabels[platform]} Output:`;
 }
 
+/* ── AI Transform ───────────────────────────────────────────────────────── */
 async function transformWithAI(parsedJSON) {
   const prompt = buildTransformPrompt(parsedJSON, state.platform);
 
@@ -592,6 +822,7 @@ async function transformWithAI(parsedJSON) {
   }
 }
 
+/* ── Rule-based Transform ───────────────────────────────────────────────── */
 function transformRuleBased(parsed) {
   const name = parsed.name || parsed.id || 'Unnamed';
   const desc = parsed.description || '';
@@ -680,6 +911,7 @@ ${systemPrompt || 'Recherchiere und beantworte Fragen zu diesem Themenbereich.'}
   }
 }
 
+/* ── JSON Parser ────────────────────────────────────────────────────────── */
 function robustParse(input) {
   let s = String(input).trim();
   try { return { data: JSON.parse(s), repaired: false }; } catch(_) {}
@@ -701,27 +933,29 @@ function robustParse(input) {
   }
 }
 
+/* ── Main Transform ─────────────────────────────────────────────────────── */
 async function transform() {
   const jsonText = document.getElementById('jsonInput').value.trim();
-  if (!jsonText) { showToast('Kein JSON eingef\u00fcgt', 'error'); return; }
+  const t = TEXTS[state.lang];
+  if (!jsonText) { showToast(t.noJson, 'error'); return; }
 
-  let parsed;
   const parseResult = robustParse(jsonText);
   if (parseResult.error) {
-    showStatus('error', 'JSON konnte nicht repariert werden: ' + parseResult.error);
+    showStatus('error', t.jsonRepairFailed(parseResult.error));
     return;
   }
-  parsed = parseResult.data;
+  const parsed = parseResult.data;
   if (parseResult.repaired) {
-    showToast('JSON automatisch repariert', 'success');
+    showToast(t.jsonRepaired, 'success');
   }
 
   const btn = document.getElementById('transformBtn');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Transformiere...';
+  btn.innerHTML = '<div class="spinner"></div> <span>' + t.transformingBtn + '</span>';
 
   hideOutput();
-  showStatus('loading', state.apiKey ? `KI-Transformation via ${state.apiProvider === 'openai' ? 'OpenAI gpt-4o' : 'Claude claude-sonnet-4'}...` : 'Regelbasierte Transformation (kein API Key)...');
+  const providerLabel = state.apiProvider === 'openai' ? 'OpenAI gpt-4o' : 'Claude claude-sonnet-4';
+  showStatus('loading', state.apiKey ? t.transformingAI(providerLabel) : t.transformingRules);
 
   try {
     let result;
@@ -734,29 +968,30 @@ async function transform() {
 
     state.output = result;
     showOutput(result);
-    showStatus('success', `Erfolgreich transformiert \u2192 ${platformLabels[state.platform]}${!state.apiKey ? ' (regelbasiert \u2014 API Key f\u00fcr KI-Optimierung)' : ''}`);
+    showStatus('success', t.successTransform(platformLabels[state.platform], !!state.apiKey));
 
     const badge = document.getElementById('outputPlatformBadge');
     badge.innerHTML = `<span class="platform-badge ${platformColors[state.platform]}">${platformLabels[state.platform]}</span>`;
     badge.style.display = 'block';
 
   } catch(e) {
-    showStatus('error', 'Fehler: ' + e.message);
+    showStatus('error', t.apiError(e.message));
     if (e.message.includes('401') || e.message.includes('Unauthorized')) {
-      showToast('API Key ung\u00fcltig oder abgelaufen', 'error');
+      showToast(t.apiKeyInvalid, 'error');
     }
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg> Transformieren';
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg> <span id="transformBtnLabel">' + TEXTS[state.lang].transformBtn + '</span>';
   }
 }
 
+/* ── UI Helpers ─────────────────────────────────────────────────────────── */
 function showStatus(type, msg) {
   const bar = document.getElementById('statusBar');
   const icons = {
     loading: '<div class="spinner"></div>',
     success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
-    error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+    error:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
   };
   bar.className = `status-bar status-${type}`;
   bar.innerHTML = `${icons[type]} ${msg}`;
@@ -783,16 +1018,16 @@ function clearAll() {
   hideOutput();
   document.getElementById('statusBar').style.display = 'none';
   state.output = null;
-  showToast('Zur\u00fcckgesetzt', 'success');
+  showToast(TEXTS[state.lang].resetDone, 'success');
 }
 
 async function copyOutput() {
   if (!state.output) return;
   try {
     await navigator.clipboard.writeText(state.output);
-    showToast('In Zwischenablage kopiert', 'success');
+    showToast(TEXTS[state.lang].copied, 'success');
   } catch(e) {
-    showToast('Kopieren fehlgeschlagen', 'error');
+    showToast(TEXTS[state.lang].copyFailed, 'error');
   }
 }
 
@@ -804,7 +1039,7 @@ function downloadOutput() {
   a.href = URL.createObjectURL(blob);
   a.download = ext[state.platform] || 'transformed.txt';
   a.click();
-  showToast('Download gestartet', 'success');
+  showToast(TEXTS[state.lang].downloadStarted, 'success');
 }
 
 function showToast(msg, type = 'success') {
@@ -812,7 +1047,7 @@ function showToast(msg, type = 'success') {
   const t = document.createElement('div');
   const icons = {
     success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
-    error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+    error:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
   };
   t.className = `toast ${type}`;
   t.innerHTML = `${icons[type] || ''} ${msg}`;
@@ -820,17 +1055,17 @@ function showToast(msg, type = 'success') {
   setTimeout(() => t.remove(), 3500);
 }
 
-updatePractices();
-
+/* ── File Handling ──────────────────────────────────────────────────────── */
 function uploadJsonFile() {
   document.getElementById('jsonFileInput').click();
 }
 
 function handleJsonFile(event) {
   const file = event.target.files[0];
+  const t = TEXTS[state.lang];
   if (!file) return;
   if (!file.name.endsWith('.json') && file.type !== 'application/json') {
-    showStatus('error', 'Bitte eine .json Datei ausw\u00e4hlen.');
+    showStatus('error', t.fileTypeError);
     return;
   }
   const reader = new FileReader();
@@ -838,34 +1073,38 @@ function handleJsonFile(event) {
     const raw = e.target.result;
     const result = robustParse(raw);
     if (result.error) {
-      showStatus('error', 'Datei konnte nicht gelesen werden: ' + result.error);
+      showStatus('error', t.fileReadError);
     } else {
       document.getElementById('jsonInput').value = JSON.stringify(result.data, null, 2);
-      showToast(result.repaired ? 'Datei geladen & JSON repariert' : 'Datei geladen', 'success');
+      showToast(result.repaired ? t.fileLoadedRepaired : t.fileLoaded, 'success');
     }
     event.target.value = '';
   };
-  reader.onerror = () => showStatus('error', 'Datei konnte nicht gelesen werden.');
+  reader.onerror = () => showStatus('error', t.fileReadError);
   reader.readAsText(file, 'utf-8');
 }
 
 async function pasteFromClipboard() {
+  const t = TEXTS[state.lang];
   try {
     const text = await navigator.clipboard.readText();
-    if (!text.trim()) { showToast('Zwischenablage ist leer', 'error'); return; }
+    if (!text.trim()) { showToast(t.emptyClipboard, 'error'); return; }
     const result = robustParse(text);
     if (result.error) {
       document.getElementById('jsonInput').value = text;
-      showToast('Text eingef\u00fcgt (kein valides JSON \u2014 bitte pr\u00fcfen)', 'error');
+      showToast(t.notValidJson, 'error');
     } else {
       document.getElementById('jsonInput').value = JSON.stringify(result.data, null, 2);
-      showToast(result.repaired ? 'Eingef\u00fcgt & JSON repariert' : 'JSON eingef\u00fcgt', 'success');
+      showToast(result.repaired ? t.jsonRepaired : t.fileLoaded, 'success');
     }
   } catch(err) {
     document.getElementById('jsonInput').focus();
-    showToast('Bitte Ctrl+V zum Einf\u00fcgen verwenden', 'error');
+    showToast(t.pasteHint, 'error');
   }
 }
+
+/* ── Init ───────────────────────────────────────────────────────────────── */
+updatePractices();
 </script>
 </body>
 </html>

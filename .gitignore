@@ -6,3 +6,5 @@ app/audit/logs/*.jsonl
 output/*
 !output/.gitkeep
 !app/audit/logs/.gitkeep
+
+.vercel
