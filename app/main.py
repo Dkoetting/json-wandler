@@ -1,14 +1,14 @@
-import shutil
+import json
 import tempfile
 from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from app.core.converter import convert_gpt
+from app.core.models import GPTData
 from app.core.parser import parse_gpt_file
 from app.core.targets import ALL_TARGET_NAMES
 from app.audit.logger import log_migration
@@ -19,28 +19,30 @@ app = FastAPI(title="JSON Wandler", description="ChatGPT GPT → Claude / Gemini
 
 BASE_DIR = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 OUTPUT_DIR = Path(__file__).parent.parent / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "targets": ALL_TARGET_NAMES,
-    })
+async def index():
+    html_path = BASE_DIR / "templates" / "index.html"
+    return HTMLResponse(html_path.read_text(encoding="utf-8"))
 
 
-@app.post("/migrate", response_class=HTMLResponse)
-async def migrate(
-    request: Request,
+@app.get("/api/targets")
+async def get_targets():
+    return {"targets": ALL_TARGET_NAMES}
+
+
+@app.post("/api/migrate")
+async def api_migrate(
     json_file: UploadFile = File(...),
-    targets: list[str] = Form(...),
+    target: str = Form("all"),
     mode: str = Form("quick"),
+    provider: str = Form("anthropic"),
 ):
-    # Temporäre Datei anlegen und parsen
+    """API-Endpunkt für einzelne Migration (vom Frontend aufgerufen)."""
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
         content = await json_file.read()
         tmp.write(content)
@@ -50,15 +52,14 @@ async def migrate(
     tmp_path.unlink(missing_ok=True)
 
     if not gpt:
-        return templates.TemplateResponse("result.html", {
-            "request": request,
-            "error": "Ungültige JSON-Datei. Bitte lade eine gültige GPT-JSON hoch.",
-            "results": [],
-        })
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Ungültige JSON-Datei. Bitte eine gültige GPT-JSON hochladen."},
+        )
 
-    results = convert_gpt(gpt, targets, mode, OUTPUT_DIR)
+    targets = [target] if target != "all" else ["all"]
+    results = convert_gpt(gpt, targets, mode, OUTPUT_DIR, provider=provider)
 
-    # Loggen
     for r in results:
         log_migration(
             source_name=r.source_name,
@@ -73,21 +74,20 @@ async def migrate(
             original_prompt=gpt.system_prompt[:500],
         )
 
-    return templates.TemplateResponse("result.html", {
-        "request": request,
-        "error": None,
+    return {
         "gpt_name": gpt.name,
-        "results": results,
-    })
+        "results": [r.model_dump() for r in results],
+    }
 
 
-@app.post("/migrate/batch", response_class=HTMLResponse)
-async def migrate_batch(
-    request: Request,
+@app.post("/api/migrate/batch")
+async def api_migrate_batch(
     json_files: list[UploadFile] = File(...),
-    targets: list[str] = Form(...),
+    target: str = Form("all"),
     mode: str = Form("quick"),
+    provider: str = Form("anthropic"),
 ):
+    """Batch-Migration mehrerer GPT-JSONs."""
     all_results = []
 
     for json_file in json_files:
@@ -102,7 +102,9 @@ async def migrate_batch(
         if not gpt:
             continue
 
-        results = convert_gpt(gpt, targets, mode, OUTPUT_DIR)
+        targets = [target] if target != "all" else ["all"]
+        results = convert_gpt(gpt, targets, mode, OUTPUT_DIR, provider=provider)
+
         for r in results:
             log_migration(
                 source_name=r.source_name,
@@ -118,12 +120,10 @@ async def migrate_batch(
             )
         all_results.extend(results)
 
-    return templates.TemplateResponse("result.html", {
-        "request": request,
-        "error": None if all_results else "Keine gültigen GPT-JSONs gefunden.",
-        "gpt_name": f"{len(all_results)} Migrationen",
-        "results": all_results,
-    })
+    return {
+        "total": len(all_results),
+        "results": [r.model_dump() for r in all_results],
+    }
 
 
 @app.get("/download/{filename}")

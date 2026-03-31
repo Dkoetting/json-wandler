@@ -47,12 +47,15 @@ def test_claude_skill_content_has_frontmatter():
         assert "Academic Assistant" in content
 
 
-def test_claude_skill_content_has_notes():
+def test_claude_skill_content_has_xml_tags():
     gpt = _make_gpt()
     with tempfile.TemporaryDirectory() as tmpdir:
         result_path = convert_to_claude_skill(gpt, Path(tmpdir))
         with zipfile.ZipFile(result_path) as zf:
             content = zf.read("SKILL.md").decode()
+        assert "<role>" in content
+        assert "<instructions>" in content
+        assert "<constraints>" in content
         assert "Web Search" in content
         assert "paper_guide.pdf" in content
 
@@ -66,15 +69,15 @@ def test_gemini_gem_creates_file():
         assert result_path.exists()
 
 
-def test_gemini_gem_has_four_pillars():
+def test_gemini_gem_has_structure():
     gpt = _make_gpt()
     with tempfile.TemporaryDirectory() as tmpdir:
         result_path = convert_to_gemini_gem(gpt, Path(tmpdir))
         content = result_path.read_text()
-    assert "Role (Pillar 1)" in content
-    assert "Task (Pillar 2)" in content
-    assert "Format (Pillar 3)" in content
-    assert "Constraints (Pillar 4)" in content
+    assert "## Persona" in content
+    assert "## Hauptaufgabe" in content
+    assert "## Kommunikationsstil" in content
+    assert "Einschr" in content  # Einschränkungen (Umlaut-safe)
 
 
 # --- Grok ---
@@ -86,12 +89,14 @@ def test_grok_creates_file():
         assert result_path.exists()
 
 
-def test_grok_has_instructions():
+def test_grok_has_english_format():
     gpt = _make_gpt()
     with tempfile.TemporaryDirectory() as tmpdir:
         result_path = convert_to_grok_instructions(gpt, Path(tmpdir))
         content = result_path.read_text()
-    assert "Instructions" in content
+    assert "You are Academic Assistant" in content
+    assert "## Core Instructions" in content
+    assert "## Tone" in content
     assert gpt.system_prompt in content
 
 
@@ -104,9 +109,11 @@ def test_perplexity_creates_file():
         assert result_path.exists()
 
 
-def test_perplexity_has_focus_areas():
+def test_perplexity_has_recherche_fokus():
     gpt = _make_gpt()
     with tempfile.TemporaryDirectory() as tmpdir:
         result_path = convert_to_perplexity_instructions(gpt, Path(tmpdir))
         content = result_path.read_text()
-    assert "Focus Areas" in content
+    assert "Recherche-Fokus" in content
+    assert "Quellen-Anforderungen" in content
+    assert "Ausgabeformat" in content

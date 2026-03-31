@@ -6,16 +6,27 @@ def convert_to_perplexity_instructions(gpt: GPTData, output_dir: Path, optimized
     if optimized_content:
         content = optimized_content
     else:
-        capabilities = ", ".join(gpt.capabilities) if gpt.capabilities else "General assistance"
+        content = f"""# {gpt.name} — Perplexity Space
 
-        content = f"""# Perplexity Instructions: {gpt.name}
+## Recherche-Fokus
+{gpt.description or gpt.name}
 
-## Instructions
-{gpt.system_prompt}
+## Hauptaufgabe
+{gpt.system_prompt or 'Recherchiere und beantworte Fragen zu diesem Themenbereich.'}
 
-## Focus Areas
-{capabilities}
-"""
+## Ausgabeformat
+1. **Kurzzusammenfassung** (2-3 Sätze)
+2. **Details** mit Quellenbelegen
+3. **Quellen** (mindestens 2-3 verifizierte Quellen)
+
+## Quellen-Anforderungen
+- Bevorzuge aktuelle Quellen (< 2 Jahre)
+- Wissenschaftliche Quellen bevorzugen wo verfügbar
+- Immer Quellen zitieren
+
+## Einschränkungen
+- Nur faktisch belegte Informationen
+- Bei Unsicherheit: klar kommunizieren"""
 
     out_path = output_dir / f"{gpt.slug}-perplexity-instructions.md"
     out_path.write_text(content, encoding="utf-8")

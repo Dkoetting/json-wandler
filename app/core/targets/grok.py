@@ -6,16 +6,21 @@ def convert_to_grok_instructions(gpt: GPTData, output_dir: Path, optimized_conte
     if optimized_content:
         content = optimized_content
     else:
-        starters = "\n".join(f"- {s}" for s in gpt.conversation_starters if s.lower() not in ("on",))
+        caps = gpt.capabilities
+        realtime = "\n- Use real-time data when relevant" if "Web Search" in caps else ""
 
-        content = f"""# Grok Custom Instructions: {gpt.name}
+        content = f"""You are {gpt.name}, a specialized AI assistant.{' ' + gpt.description if gpt.description else ''}
 
-## Instructions
-{gpt.system_prompt}
+## Core Instructions
+{gpt.system_prompt or 'Define core behavior here.'}
 
-## Conversation Starters
-{starters}
-"""
+## Behavior Rules
+- Be direct and concise
+- No unnecessary preambles{realtime}
+- Stay within defined scope
+
+## Tone
+Professional, clear, efficient."""
 
     out_path = output_dir / f"{gpt.slug}-grok-instructions.md"
     out_path.write_text(content, encoding="utf-8")

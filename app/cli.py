@@ -42,7 +42,13 @@ def targets():
     default="output",
     help="Ausgabeverzeichnis",
 )
-def migrate(source: str, target: tuple[str], mode: str, output: str):
+@click.option(
+    "--provider", "-p",
+    type=click.Choice(["anthropic", "openai"]),
+    default="anthropic",
+    help="LLM-Provider für optimierten Modus",
+)
+def migrate(source: str, target: tuple[str], mode: str, output: str, provider: str):
     """Migriere eine GPT-JSON oder einen ganzen Ordner."""
     source_path = Path(source)
     output_dir = Path(output)

@@ -18,15 +18,19 @@ class OptimizationResult:
 
 
 TARGET_PROMPTS = {
-    "claude": """Du bist ein Experte für Claude Skills (SKILL.md Format).
-Wandle den folgenden ChatGPT System-Prompt in einen optimierten Claude Skill um.
+    "claude": """Du bist ein Experte für Claude AI Skills und System Prompts.
+Transformiere das folgende ChatGPT Custom GPT JSON in einen optimierten Claude Skill System Prompt.
 
-Regeln:
-- Beginne mit YAML-Frontmatter (name, description, trigger_phrases)
-- Nutze Progressive Disclosure: Kernverhalten zuerst, Details danach
-- Strukturiere mit klaren Markdown-Überschriften
-- Entferne ChatGPT-spezifische Referenzen
-- Behalte die Kernlogik und das Fachwissen bei
+CLAUDE SKILL ANFORDERUNGEN:
+- Beginne mit einer klaren Rollendefinition in XML: <role>...</role>
+- Nutze <instructions> für Hauptanweisungen
+- Nutze <constraints> für Einschränkungen/Was der Skill NICHT tut
+- Nutze <conversation_style> für Kommunikationsstil
+- Nutze <examples> wenn Starter-Prompts vorhanden sind
+- Entferne alle ChatGPT-spezifischen Referenzen (Plugins, DALL-E, ChatGPT-URLs)
+- Aktiviere Reasoning wo sinnvoll ("Denke Schritt für Schritt")
+- Behalte Mehrsprachigkeit wenn im Original definiert
+- Gib NUR den fertigen System Prompt zurück, kein JSON
 
 Original GPT: {name}
 Beschreibung: {description}
@@ -34,16 +38,21 @@ Beschreibung: {description}
 System-Prompt:
 {system_prompt}
 
-Erstelle jetzt den optimierten SKILL.md Inhalt:""",
+Erstelle jetzt den optimierten Claude Skill Output:""",
 
     "gemini": """Du bist ein Experte für Google Gemini Gems.
-Wandle den folgenden ChatGPT System-Prompt in optimierte Gemini Gem Instructions um.
+Transformiere das folgende ChatGPT Custom GPT JSON in Gemini Gem Instruktionen.
 
-Nutze die Four-Pillars-Struktur:
-1. Role (Pillar 1): Wer ist das Gem?
-2. Task (Pillar 2): Was soll es tun?
-3. Format (Pillar 3): Wie soll die Ausgabe aussehen?
-4. Constraints (Pillar 4): Was sind die Grenzen?
+GEMINI GEM ANFORDERUNGEN:
+- Beginne mit: "# [Name] — Gemini Gem"
+- Definiere eine klare Persona mit Namen und Charaktereigenschaften
+- Sektion "## Hauptaufgabe" mit klaren Instruktionen
+- Sektion "## Kommunikationsstil"
+- Sektion "## Einschränkungen"
+- Nutze Google-native Konzepte (Google Search, Google Workspace) wenn sinnvoll
+- Beschreibe multimodale Fähigkeiten explizit wenn relevant
+- Markdown-strukturiert für optimales Rendering
+- Gib NUR die fertigen Gem-Instruktionen zurück
 
 Original GPT: {name}
 Beschreibung: {description}
@@ -53,31 +62,18 @@ System-Prompt:
 
 Erstelle jetzt die optimierten Gem Instructions:""",
 
-    "grok": """Du bist ein Experte für Grok Custom Instructions (grok.com).
-Wandle den folgenden ChatGPT System-Prompt in optimierte Grok Custom Instructions um.
+    "grok": """Du bist ein Experte für xAI Grok System Prompts.
+Transformiere das folgende ChatGPT Custom GPT JSON in einen Grok System Prompt.
 
-Regeln:
-- Kompakt und direkt (Grok bevorzugt prägnante Anweisungen)
-- Entferne ChatGPT-spezifische Referenzen
-- Behalte die Kernlogik bei
-- Fokus auf Verhaltensanweisungen
-
-Original GPT: {name}
-Beschreibung: {description}
-
-System-Prompt:
-{system_prompt}
-
-Erstelle jetzt die optimierten Grok Custom Instructions:""",
-
-    "perplexity": """Du bist ein Experte für Perplexity AI Instructions.
-Wandle den folgenden ChatGPT System-Prompt in optimierte Perplexity Instructions um.
-
-Regeln:
-- Fokus auf Recherche-Anweisungen (Perplexity ist eine Suchmaschine)
-- Quellennutzung und Faktencheck betonen
-- Entferne ChatGPT-spezifische Referenzen
-- Kompakt halten
+GROK ANFORDERUNGEN:
+- Direkter, prägnanter Stil ohne Floskeln
+- Beginne mit: "You are [Name], a specialized AI assistant."
+- Kurze, klare Instruktionsblöcke
+- Definiere explizit: Ton (ernst/humorvoll), Umfang, Grenzen
+- Optional: Hinweis auf Realtime X/Twitter-Daten wenn relevant
+- Keine langen verschachtelten Strukturen
+- Englisch bevorzugt, außer Original ist klar deutsch
+- Gib NUR den fertigen System Prompt zurück
 
 Original GPT: {name}
 Beschreibung: {description}
@@ -85,13 +81,49 @@ Beschreibung: {description}
 System-Prompt:
 {system_prompt}
 
-Erstelle jetzt die optimierten Perplexity Instructions:""",
+Erstelle jetzt den optimierten Grok System Prompt:""",
+
+    "perplexity": """Du bist ein Experte für Perplexity AI Space Instructions.
+Transformiere das folgende ChatGPT Custom GPT JSON in Perplexity Space Instructions.
+
+PERPLEXITY ANFORDERUNGEN:
+- Beginne mit klarer Beschreibung: was dieser Space recherchiert
+- Definiere Quellen-Anforderungen explizit (Web/Academic/YouTube/Reddit)
+- Sektion "Recherche-Fokus" mit Kernthemen
+- Sektion "Ausgabeformat": Kurzzusammenfassung → Details → Quellen
+- Definiere Sprache und Fachtiefe
+- Betone Faktentreue über Kreativität
+- Kein Fokus auf Konversation, sondern auf Informationsabruf
+- Gib NUR die fertigen Space Instructions zurück
+
+Original GPT: {name}
+Beschreibung: {description}
+
+System-Prompt:
+{system_prompt}
+
+Erstelle jetzt die optimierten Perplexity Space Instructions:""",
 }
 
 
-def optimize_for_target(gpt: GPTData, target: str) -> OptimizationResult:
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key or api_key == "sk-ant-xxxxx":
+def optimize_for_target(gpt: GPTData, target: str, provider: str = "anthropic", api_key: str | None = None) -> OptimizationResult:
+    """Optimize GPT content for target platform using LLM.
+
+    Args:
+        gpt: The parsed GPT data
+        target: Target platform (claude, gemini, grok, perplexity)
+        provider: LLM provider ("anthropic" or "openai")
+        api_key: Optional API key override (from UI). Falls back to env var.
+    """
+    if provider == "openai":
+        return _optimize_openai(gpt, target, api_key)
+    else:
+        return _optimize_anthropic(gpt, target, api_key)
+
+
+def _optimize_anthropic(gpt: GPTData, target: str, api_key: str | None = None) -> OptimizationResult:
+    key = api_key or os.getenv("ANTHROPIC_API_KEY", "")
+    if not key or key == "sk-ant-xxxxx":
         return OptimizationResult(error="Kein gültiger ANTHROPIC_API_KEY gesetzt")
 
     if target not in TARGET_PROMPTS:
@@ -105,7 +137,7 @@ def optimize_for_target(gpt: GPTData, target: str) -> OptimizationResult:
 
     try:
         from anthropic import Anthropic
-        client = Anthropic(api_key=api_key)
+        client = Anthropic(api_key=key)
 
         request_payload = {
             "model": "claude-sonnet-4-20250514",
@@ -124,5 +156,55 @@ def optimize_for_target(gpt: GPTData, target: str) -> OptimizationResult:
             llm_response={"content": output_text, "model": response.model},
         )
     except Exception as e:
-        logger.error(f"LLM-Optimierung fehlgeschlagen: {e}")
+        logger.error(f"Anthropic-Optimierung fehlgeschlagen: {e}")
+        return OptimizationResult(error=str(e))
+
+
+def _optimize_openai(gpt: GPTData, target: str, api_key: str | None = None) -> OptimizationResult:
+    """Platzhalter für OpenAI-basierte Optimierung.
+
+    Benötigt: pip install openai
+    Wird aktiviert wenn OPENAI_API_KEY gesetzt oder Key über UI übergeben wird.
+    """
+    key = api_key or os.getenv("OPENAI_API_KEY", "")
+    if not key:
+        return OptimizationResult(error="Kein gültiger OPENAI_API_KEY gesetzt")
+
+    if target not in TARGET_PROMPTS:
+        return OptimizationResult(error=f"Unbekanntes Ziel: {target}")
+
+    prompt = TARGET_PROMPTS[target].format(
+        name=gpt.name,
+        description=gpt.description,
+        system_prompt=gpt.system_prompt[:12000],
+    )
+
+    try:
+        import openai
+        client = openai.OpenAI(api_key=key)
+
+        request_payload = {
+            "model": "gpt-4o",
+            "messages": [
+                {"role": "system", "content": "Du bist ein Experte für LLM Prompt Engineering und AI Platform Migration."},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.3,
+            "max_tokens": 4096,
+        }
+
+        response = client.chat.completions.create(**request_payload)
+
+        output_text = response.choices[0].message.content
+        return OptimizationResult(
+            output=output_text,
+            tokens_input=response.usage.prompt_tokens,
+            tokens_output=response.usage.completion_tokens,
+            llm_request=request_payload,
+            llm_response={"content": output_text, "model": response.model},
+        )
+    except ImportError:
+        return OptimizationResult(error="OpenAI SDK nicht installiert. Bitte: pip install openai")
+    except Exception as e:
+        logger.error(f"OpenAI-Optimierung fehlgeschlagen: {e}")
         return OptimizationResult(error=str(e))

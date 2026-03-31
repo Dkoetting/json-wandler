@@ -10,6 +10,8 @@ def convert_gpt(
     targets: list[str],
     mode: str,
     output_dir: Path,
+    provider: str = "anthropic",
+    api_key: str | None = None,
 ) -> list[MigrationResult]:
     if "all" in targets:
         targets = ALL_TARGET_NAMES
@@ -35,7 +37,7 @@ def convert_gpt(
             opt_result = None
             if mode == "optimized" and gpt.has_content:
                 from app.core.optimizer import optimize_for_target
-                opt_result = optimize_for_target(gpt, target_name)
+                opt_result = optimize_for_target(gpt, target_name, provider=provider, api_key=api_key)
                 if opt_result.output:
                     optimized_content = opt_result.output
 
