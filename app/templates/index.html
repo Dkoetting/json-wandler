@@ -154,22 +154,25 @@ select option{background:var(--color-surface)}
 <body>
 <div class="app">
   <header>
-    <a class="logo" href="#">
-      <svg class="logo-mark" viewBox="0 0 36 36" fill="none" aria-label="JSON Wandler Logo">
-        <rect width="36" height="36" rx="10" fill="var(--color-primary)" opacity=".15"/>
-        <rect x="6" y="6" width="24" height="24" rx="7" stroke="var(--color-primary)" stroke-width="1.5" fill="none"/>
-        <path d="M10 14h4M10 18h4M10 22h4" stroke="var(--color-primary)" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M18 13l5 5-5 5" stroke="var(--color-gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </svg>
-      <div>
+    <!-- k & n edv konzepte gmbh Logo (links) -->
+    <div style="display:flex;align-items:center">
+      <img src="/static/logo-kn.png" alt="k &amp; n edv konzepte gmbh" style="height:40px;width:auto;object-fit:contain"/>
+    </div>
+
+    <!-- Mitte: Titel + Theme Toggle -->
+    <div style="display:flex;align-items:center;gap:var(--space-4);flex:1;justify-content:center">
+      <div style="text-align:center">
         <div class="logo-text">JSON Wandler</div>
-        <div class="logo-sub">Dr.DirKI Institute — cGPT &rarr; Claude / Gemini / Grok / Perplexity</div>
+        <div class="logo-sub">cGPT &rarr; Claude / Gemini / Grok / Perplexity</div>
       </div>
-    </a>
-    <div class="header-actions">
       <button class="btn-icon" data-theme-toggle aria-label="Farbschema wechseln">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
+    </div>
+
+    <!-- Dr.DirKInstitute Logo (rechts) -->
+    <div style="display:flex;align-items:center">
+      <img src="/static/logo-drdirki.png" alt="Dr.DirKInstitute" style="height:44px;width:auto;object-fit:contain"/>
     </div>
   </header>
 
