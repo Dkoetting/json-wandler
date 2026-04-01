@@ -390,6 +390,11 @@ const TEXTS = {
     downloadStarted:   'Download gestartet',
     resetDone:         'Zur\u00fcckgesetzt',
     emptyClipboard:    'Zwischenablage ist leer',
+    skillInstallTitle: 'Als Claude Skill installieren',
+    skillStep1:        'SKILL.md herunterladen (Button oben)',
+    skillStep2:        'claude.ai im Browser öffnen',
+    skillStep3:        'Anpassen → Skills → + → <strong>Skill hochladen</strong>',
+    skillStep4:        'SKILL.md auswählen → fertig ✓',
     pasteHint:         'Bitte Ctrl+V zum Einf\u00fcgen verwenden',
     fileLoaded:        'Datei geladen',
     fileLoadedRepaired:'Datei geladen & JSON repariert',
@@ -446,6 +451,11 @@ const TEXTS = {
     downloadStarted:   'Download started',
     resetDone:         'Reset',
     emptyClipboard:    'Clipboard is empty',
+    skillInstallTitle: 'Install as Claude Skill',
+    skillStep1:        'Download SKILL.md (button above)',
+    skillStep2:        'Open claude.ai in your browser',
+    skillStep3:        'Customize → Skills → + → <strong>Upload skill</strong>',
+    skillStep4:        'Select SKILL.md → done ✓',
     pasteHint:         'Please use Ctrl+V to paste',
     fileLoaded:        'File loaded',
     fileLoadedRepaired:'File loaded & JSON repaired',
@@ -615,6 +625,7 @@ function selectPlatform(p, btn) {
   state.platform = p;
   document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  if (state.output) renderSkillInstallBox();
   document.getElementById('currentPlatformLabel').textContent = platformLabels[p];
   updatePractices();
 }
@@ -969,6 +980,7 @@ async function transform() {
     state.output = result;
     showOutput(result);
     showStatus('success', t.successTransform(platformLabels[state.platform], !!state.apiKey));
+    renderSkillInstallBox();
 
     const badge = document.getElementById('outputPlatformBadge');
     badge.innerHTML = `<span class="platform-badge ${platformColors[state.platform]}">${platformLabels[state.platform]}</span>`;
@@ -1017,6 +1029,7 @@ function clearAll() {
   document.getElementById('jsonInput').value = '';
   hideOutput();
   document.getElementById('statusBar').style.display = 'none';
+  document.getElementById('platformInfo').innerHTML = '';
   state.output = null;
   showToast(TEXTS[state.lang].resetDone, 'success');
 }
@@ -1033,13 +1046,32 @@ async function copyOutput() {
 
 function downloadOutput() {
   if (!state.output) return;
-  const ext = { claude: 'claude-skill.md', gemini: 'gemini-gem.md', grok: 'grok-system.txt', perplexity: 'perplexity-space.md' };
+  const ext = { claude: 'SKILL.md', gemini: 'gemini-gem.md', grok: 'grok-system.txt', perplexity: 'perplexity-space.md' };
   const blob = new Blob([state.output], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = ext[state.platform] || 'transformed.txt';
   a.click();
   showToast(TEXTS[state.lang].downloadStarted, 'success');
+}
+
+function renderSkillInstallBox() {
+  const box = document.getElementById('platformInfo');
+  if (state.platform !== 'claude') { box.innerHTML = ''; return; }
+  const t = TEXTS[state.lang];
+  box.innerHTML = `
+    <div style="margin-top:var(--space-4);background:oklch(from var(--color-primary) l c h/.07);border:1px solid oklch(from var(--color-primary) l c h/.25);border-radius:var(--radius-lg);padding:var(--space-4);">
+      <div style="font-weight:700;font-size:var(--text-sm);color:var(--color-primary);margin-bottom:var(--space-3);display:flex;align-items:center;gap:var(--space-2);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm0-14v4m0 4h.01"/></svg>
+        ${t.skillInstallTitle}
+      </div>
+      <ol style="padding-left:var(--space-4);font-size:var(--text-xs);color:var(--color-text-muted);line-height:2;margin:0;">
+        <li>${t.skillStep1}</li>
+        <li>${t.skillStep2}</li>
+        <li>${t.skillStep3}</li>
+        <li>${t.skillStep4}</li>
+      </ol>
+    </div>`;
 }
 
 function showToast(msg, type = 'success') {
