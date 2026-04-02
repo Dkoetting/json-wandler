@@ -842,26 +842,51 @@ function transformRuleBased(parsed) {
   const caps = parsed.capabilities || [];
 
   switch(state.platform) {
-    case 'claude':
-      return `<role>
-Du bist ${name}, ein spezialisierter KI-Assistent.${desc ? '\n' + desc : ''}
+    case 'claude': {
+      const skillName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 64);
+      const triggerPhrases = starters.length
+        ? starters.slice(0,3).map(s => `"${s}"`).join(', ')
+        : `"${name} starten", "${name} nutzen"`;
+      const skillDesc = `${desc || 'Spezialisierter KI-Assistent für ' + name + '.'} Anwenden wenn Nutzer ${triggerPhrases} sagt.`.slice(0, 1024);
+      return `---
+name: ${skillName}
+description: ${skillDesc}
+metadata:
+  author: Dr. Dirk Kötting
+  version: 1.0.0
+  category: ai-assistant
+---
+
+# ${name}
+
+## Überblick
+
+<role>
+Du bist ${name}, ein spezialisierter KI-Assistent.${desc ? ' ' + desc : ''}
 </role>
+
+## Anweisungen
 
 <instructions>
 ${systemPrompt || 'Keine spezifischen Instruktionen definiert.'}
 </instructions>
 
+## Constraints
+
 <constraints>
 - Bleibe immer im definierten Aufgabenbereich
-- Verweise bei Bedarf auf verf\u00fcgbare Optionen
-${caps.includes('Web Search') ? '- Nutze Web-Suche f\u00fcr aktuelle Informationen' : ''}
+- Verweise bei Bedarf auf verfügbare Optionen
+${caps.includes('Web Search') ? '- Nutze Web-Suche für aktuelle Informationen' : ''}
 </constraints>
+
+## Kommunikationsstil
 
 <conversation_style>
 - Strukturiert und klar
 - Frage bei Unklarheiten nach
-${starters.length ? `\n<examples>\nBeispiel-Einstiege:\n${starters.slice(0,3).map(s => `- ${s}`).join('\n')}\n</examples>` : ''}
-</conversation_style>`;
+</conversation_style>
+${starters.length ? `\n## Beispiel-Einstiege\n\n${starters.slice(0,3).map(s => `- "${s}"`).join('\n')}` : ''}`;
+    }
 
     case 'gemini':
       return `# ${name} \u2014 Gemini Gem
