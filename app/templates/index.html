@@ -395,6 +395,12 @@ const TEXTS = {
     skillStep2:        'claude.ai im Browser öffnen',
     skillStep3:        'Anpassen → Skills → + → <strong>Skill hochladen</strong>',
     skillStep4:        'SKILL.md auswählen → fertig ✓',
+    gemInstallTitle:   'Als Gemini Gem einrichten',
+    gemStep1:          'Text oben kopieren (Button "Kopieren")',
+    gemStep2:          'gemini.google.com öffnen',
+    gemStep3:          'Links im Menü: <strong>Gem-Manager</strong> öffnen',
+    gemStep4:          '+ Neues Gem → Feld "Anweisungen schreiben" → Text einfügen',
+    gemStep5:          'Namen vergeben → <strong>Erstellen</strong> → fertig ✓',
     pasteHint:         'Bitte Ctrl+V zum Einf\u00fcgen verwenden',
     fileLoaded:        'Datei geladen',
     fileLoadedRepaired:'Datei geladen & JSON repariert',
@@ -456,6 +462,12 @@ const TEXTS = {
     skillStep2:        'Open claude.ai in your browser',
     skillStep3:        'Customize → Skills → + → <strong>Upload skill</strong>',
     skillStep4:        'Select SKILL.md → done ✓',
+    gemInstallTitle:   'Set up as Gemini Gem',
+    gemStep1:          'Copy the text above (Copy button)',
+    gemStep2:          'Open gemini.google.com',
+    gemStep3:          'In the left menu: open <strong>Gem Manager</strong>',
+    gemStep4:          '+ New Gem → "Write instructions" field → paste text',
+    gemStep5:          'Enter a name → <strong>Create</strong> → done ✓',
     pasteHint:         'Please use Ctrl+V to paste',
     fileLoaded:        'File loaded',
     fileLoadedRepaired:'File loaded & JSON repaired',
@@ -889,23 +901,36 @@ ${starters.length ? `\n## Beispiel-Einstiege\n\n${starters.slice(0,3).map(s => `
     }
 
     case 'gemini':
-      return `# ${name} \u2014 Gemini Gem
+      return `# GEMS-KONFIGURATION: ${name.toUpperCase()}
 
 ## Persona
-Du bist **${name}**${desc ? ': ' + desc : ''}.
+Du bist der **${name}**. ${desc || 'Ein spezialisierter KI-Assistent mit tiefer Fachexpertise.'} Dein Fokus liegt auf Struktur, Umsetzbarkeit und Präzision.
 
 ## Hauptaufgabe
-${systemPrompt || 'Definiere hier die Hauptaufgabe.'}
+${systemPrompt || 'Definiere hier die Hauptaufgabe des Assistenten.'}
 
-## Kommunikationsstil
-- Klar und strukturiert
-- Nutze Markdown f\u00fcr \u00dcberschriften und Listen
-- Stelle R\u00fcckfragen wenn Kontext fehlt
+## Prozess (Schritt für Schritt)
+1. **Analyse:** Analysiere alle bereitgestellten Informationen sorgfältig.
+2. **Klärung:** Stelle gezielte Rückfragen wenn wichtige Informationen fehlen.
+3. **Ausführung:** Bearbeite die Aufgabe strukturiert und vollständig.
+4. **Ausgabe:** Präsentiere das Ergebnis klar formatiert mit Markdown.
+5. **Nachfrage:** Biete weiterführende Unterstützung an.
 
-## Einschr\u00e4nkungen
-- Bleibe im definierten Themenbereich
-${caps.includes('Web Search') ? '- Nutze Google Search f\u00fcr aktuelle Informationen\n' : ''}
-${starters.length ? `\n## Beispiel-Eingaben\n${starters.slice(0,3).map(s => `- "${s}"`).join('\n')}` : ''}`;
+## Erwarteter Nutzer-Input
+Um optimal zu helfen, benötigst du (oder fragst aktiv nach):
+${starters.length ? starters.slice(0,3).map(s => `* **Eingabe:** "${s}"`).join('\n') : '* **Beschreibung:** Was soll bearbeitet werden?\n* **Ziel:** Was ist das gewünschte Ergebnis?\n* **Kontext:** Relevante Hintergrundinformationen.'}
+
+## Ausgabeformat
+* Nutze konsequent **Markdown** (Tabellen, Listen, Fettdruck, Überschriften)
+* Strukturiere Antworten mit klaren Abschnitten
+* Fasse komplexe Inhalte in übersichtlichen Tabellen zusammen
+
+## Kommunikationsstil & Regeln
+* **Stil:** Klar, strukturiert, professionell
+* **Sprache:** Deutsch, präzise und verständlich
+* **Interaktion:** Stelle höflich nach wenn Informationen fehlen
+* **Einschränkung:** Bleibe strikt im definierten Aufgabenbereich
+${caps.includes('Web Search') ? '* **Recherche:** Nutze Google Search für aktuelle Informationen' : ''}`;
 
     case 'grok':
       return `You are ${name}, a specialized AI assistant.${desc ? ' ' + desc : ''}
@@ -1082,21 +1107,39 @@ function downloadOutput() {
 
 function renderSkillInstallBox() {
   const box = document.getElementById('platformInfo');
-  if (state.platform !== 'claude') { box.innerHTML = ''; return; }
   const t = TEXTS[state.lang];
-  box.innerHTML = `
-    <div style="margin-top:var(--space-4);background:oklch(from var(--color-primary) l c h/.07);border:1px solid oklch(from var(--color-primary) l c h/.25);border-radius:var(--radius-lg);padding:var(--space-4);">
-      <div style="font-weight:700;font-size:var(--text-sm);color:var(--color-primary);margin-bottom:var(--space-3);display:flex;align-items:center;gap:var(--space-2);">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm0-14v4m0 4h.01"/></svg>
-        ${t.skillInstallTitle}
-      </div>
-      <ol style="padding-left:var(--space-4);font-size:var(--text-xs);color:var(--color-text-muted);line-height:2;margin:0;">
-        <li>${t.skillStep1}</li>
-        <li>${t.skillStep2}</li>
-        <li>${t.skillStep3}</li>
-        <li>${t.skillStep4}</li>
-      </ol>
-    </div>`;
+  if (state.platform === 'claude') {
+    box.innerHTML = `
+      <div style="margin-top:var(--space-4);background:oklch(from var(--color-primary) l c h/.07);border:1px solid oklch(from var(--color-primary) l c h/.25);border-radius:var(--radius-lg);padding:var(--space-4);">
+        <div style="font-weight:700;font-size:var(--text-sm);color:var(--color-primary);margin-bottom:var(--space-3);display:flex;align-items:center;gap:var(--space-2);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm0-14v4m0 4h.01"/></svg>
+          ${t.skillInstallTitle}
+        </div>
+        <ol style="padding-left:var(--space-4);font-size:var(--text-xs);color:var(--color-text-muted);line-height:2;margin:0;">
+          <li>${t.skillStep1}</li>
+          <li>${t.skillStep2}</li>
+          <li>${t.skillStep3}</li>
+          <li>${t.skillStep4}</li>
+        </ol>
+      </div>`;
+  } else if (state.platform === 'gemini') {
+    box.innerHTML = `
+      <div style="margin-top:var(--space-4);background:oklch(from var(--color-primary) l c h/.07);border:1px solid oklch(from var(--color-primary) l c h/.25);border-radius:var(--radius-lg);padding:var(--space-4);">
+        <div style="font-weight:700;font-size:var(--text-sm);color:var(--color-primary);margin-bottom:var(--space-3);display:flex;align-items:center;gap:var(--space-2);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm0-14v4m0 4h.01"/></svg>
+          ${t.gemInstallTitle}
+        </div>
+        <ol style="padding-left:var(--space-4);font-size:var(--text-xs);color:var(--color-text-muted);line-height:2;margin:0;">
+          <li>${t.gemStep1}</li>
+          <li>${t.gemStep2}</li>
+          <li>${t.gemStep3}</li>
+          <li>${t.gemStep4}</li>
+          <li>${t.gemStep5}</li>
+        </ol>
+      </div>`;
+  } else {
+    box.innerHTML = '';
+  }
 }
 
 function showToast(msg, type = 'success') {
