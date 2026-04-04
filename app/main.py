@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 from pathlib import Path
 
@@ -15,6 +16,8 @@ from app.audit.logger import log_migration
 
 load_dotenv()
 
+OWNER_MODE = os.getenv("OWNER_MODE", "false").lower() == "true"
+
 app = FastAPI(title="JSON Wandler", description="ChatGPT GPT → Claude / Gemini / Grok / Perplexity Migrator")
 
 BASE_DIR = Path(__file__).parent
@@ -28,6 +31,12 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 async def index():
     html_path = BASE_DIR / "templates" / "index.html"
     return HTMLResponse(html_path.read_text(encoding="utf-8"))
+
+
+@app.get("/api/config")
+async def get_config():
+    """Returns app configuration including OWNER_MODE status."""
+    return {"ownerMode": OWNER_MODE}
 
 
 @app.get("/api/targets")
@@ -124,6 +133,57 @@ async def api_migrate_batch(
         "total": len(all_results),
         "results": [r.model_dump() for r in all_results],
     }
+
+
+@app.post("/api/transform-pro")
+async def transform_pro(request: Request):
+    """PRO endpoint: uses server-side API keys for transformation.
+    Only available when OWNER_MODE=true."""
+    if not OWNER_MODE:
+        return JSONResponse(status_code=403, content={"error": "PRO mode not available"})
+
+    body = await request.json()
+    json_input = body.get("json", "")
+    platform = body.get("platform", "claude")
+    provider = body.get("provider", "openai")
+
+    if not json_input:
+        return JSONResponse(status_code=400, content={"error": "No JSON input provided"})
+
+    # Get server-side API key
+    if provider == "openai":
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        if not api_key:
+            return JSONResponse(status_code=500, content={"error": "OPENAI_API_KEY not configured on server"})
+    else:
+        api_key = os.getenv("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            return JSONResponse(status_code=500, content={"error": "ANTHROPIC_API_KEY not configured on server"})
+
+    # Use optimizer directly
+    from app.core.optimizer import optimize_for_target
+    from app.core.models import GPTData
+
+    try:
+        parsed = json.loads(json_input) if isinstance(json_input, str) else json_input
+        gpt = GPTData(
+            name=parsed.get("name", parsed.get("id", "Unnamed")),
+            description=parsed.get("description", ""),
+            system_prompt=parsed.get("system_prompt", parsed.get("instructions", "")),
+            conversation_starters=parsed.get("conversation_starters", []),
+            capabilities=parsed.get("capabilities", []),
+        )
+        result = optimize_for_target(gpt, platform, provider=provider, api_key=api_key)
+        if result.error:
+            return JSONResponse(status_code=500, content={"error": result.error})
+        return {
+            "output": result.output,
+            "tokens_input": result.tokens_input,
+            "tokens_output": result.tokens_output,
+            "provider": provider,
+        }
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.get("/download/{filename}")

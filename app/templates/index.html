@@ -157,6 +157,32 @@ select option{background:var(--color-surface)}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
 
+/* ─── PRO MODE ─── */
+.pro-badge {
+  display:none; padding:3px 10px; border-radius:var(--radius-full);
+  font-size:10px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
+  background:linear-gradient(135deg,#d4a017,#f0c040); color:#1a1a2e;
+  box-shadow:0 2px 8px rgba(212,160,23,0.3); margin-left:var(--space-2);
+}
+body.owner-mode .pro-badge { display:inline-block; }
+body.owner-mode .api-key-section { display:none; }
+.pro-provider-select {
+  display:none; padding:var(--space-3) var(--space-4);
+  background:var(--color-surface-2); border:1px solid var(--color-border);
+  border-radius:var(--radius-lg); margin-bottom:var(--space-2);
+}
+body.owner-mode .pro-provider-select { display:block; }
+.pro-provider-select label { margin-bottom:var(--space-2); font-weight:600; color:var(--color-primary); }
+.pro-provider-btns { display:flex; gap:var(--space-2); }
+.pro-provider-btn {
+  flex:1; padding:var(--space-3); border:1.5px solid var(--color-border);
+  border-radius:var(--radius-md); background:var(--color-surface-offset);
+  text-align:center; cursor:pointer; font-weight:600; font-size:var(--text-sm);
+  transition:all var(--transition-interactive);
+}
+.pro-provider-btn:hover { border-color:var(--color-primary); }
+.pro-provider-btn.active { border-color:var(--color-primary); background:var(--color-primary-highlight); color:var(--color-primary); box-shadow:0 0 0 2px oklch(from var(--color-primary) l c h/.15); }
+
 /* ─── SPLASH SCREEN ─── */
 body.splash-active { overflow:hidden; }
 .splash-screen {
@@ -357,7 +383,7 @@ body.splash-active { overflow:hidden; }
     <!-- Mitte: Titel + Controls -->
     <div style="display:flex;align-items:center;gap:var(--space-4);flex:1;justify-content:center">
       <div style="text-align:center">
-        <div class="logo-text">JSON Wandler</div>
+        <div class="logo-text">JSON Wandler <span class="pro-badge">PRO Edition</span></div>
         <div class="logo-sub" id="headerSubtitle">Transformiert ChatGPT-Custom-GPTs automatisch in fertige Formate für Claude&#8209;SKILL, Gemini&#8209;GEMS, Grok und Perplexity</div>
       </div>
       <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -394,7 +420,16 @@ body.splash-active { overflow:hidden; }
       </div>
       <div class="panel-body">
 
-        <!-- API KEY -->
+        <!-- PRO MODE: Provider Selection (visible only in OWNER_MODE) -->
+        <div class="pro-provider-select" id="proProviderSelect">
+          <label>🔑 KI-Provider (Server-Side Keys)</label>
+          <div class="pro-provider-btns">
+            <button class="pro-provider-btn active" onclick="setProProvider('openai',this)">OpenAI · gpt-4o</button>
+            <button class="pro-provider-btn" onclick="setProProvider('anthropic',this)">Anthropic · Claude</button>
+          </div>
+        </div>
+
+        <!-- API KEY (hidden in OWNER_MODE) -->
         <div class="api-key-section">
           <div class="api-key-header" onclick="toggleApiKey()">
             <div class="api-key-title">
@@ -739,7 +774,43 @@ const bestPracticesAll = {
 };
 
 /* ── State ─────────────────────────────────────────────────────────────── */
-let state = { platform: 'claude', apiKey: null, apiProvider: 'openai', output: null, lang: 'de' };
+let state = { platform: 'claude', apiKey: null, apiProvider: 'openai', output: null, lang: 'de', ownerMode: false };
+
+/* ── Owner Mode Init ──────────────────────────────────────────────────── */
+(async function initOwnerMode() {
+  try {
+    const resp = await fetch('/api/config');
+    const cfg = await resp.json();
+    if (cfg.ownerMode) {
+      state.ownerMode = true;
+      document.body.classList.add('owner-mode');
+    }
+  } catch(e) { /* public mode fallback */ }
+})();
+
+function setProProvider(provider, btn) {
+  state.apiProvider = provider;
+  document.querySelectorAll('.pro-provider-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function transformWithPro(parsedJSON) {
+  const resp = await fetch('/api/transform-pro', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      json: JSON.stringify(parsedJSON),
+      platform: state.platform,
+      provider: state.apiProvider
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error(err.error || `Server error: ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.output;
+}
 
 const platformLabels = { claude: 'Claude', gemini: 'Gemini', grok: 'Grok', perplexity: 'Perplexity' };
 const platformColors  = { claude: 'badge-claude', gemini: 'badge-gemini', grok: 'badge-grok', perplexity: 'badge-perplexity' };
@@ -1204,11 +1275,14 @@ async function transform() {
 
   hideOutput();
   const providerLabel = state.apiProvider === 'openai' ? 'OpenAI gpt-4o' : 'Claude claude-sonnet-4';
-  showStatus('loading', state.apiKey ? t.transformingAI(providerLabel) : t.transformingRules);
+  const useAI = state.ownerMode || state.apiKey;
+  showStatus('loading', useAI ? t.transformingAI(providerLabel) : t.transformingRules);
 
   try {
     let result;
-    if (state.apiKey) {
+    if (state.ownerMode) {
+      result = await transformWithPro(parsed);
+    } else if (state.apiKey) {
       result = await transformWithAI(parsed);
     } else {
       await new Promise(r => setTimeout(r, 600));
@@ -1217,7 +1291,7 @@ async function transform() {
 
     state.output = result;
     showOutput(result);
-    showStatus('success', t.successTransform(platformLabels[state.platform], !!state.apiKey));
+    showStatus('success', t.successTransform(platformLabels[state.platform], useAI));
     renderSkillInstallBox();
 
     const badge = document.getElementById('outputPlatformBadge');
