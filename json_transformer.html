@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>JSON Transformer — cGPT zu LLM Skills</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet"/>
+<style>
+:root,[data-theme="light"]{
+  --color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;
+  --color-surface-offset:#f3f0ec;--color-surface-dynamic:#e6e4df;
+  --color-divider:#dcd9d5;--color-border:#d4d1ca;
+  --color-text:#28251d;--color-text-muted:#7a7974;--color-text-faint:#bab9b4;
+  --color-primary:#01696f;--color-primary-hover:#0c4e54;
+  --color-primary-highlight:#cedcd8;
+  --color-success:#437a22;--color-error:#a12c7b;
+  --color-orange:#da7101;--color-gold:#d19900;
+  --radius-sm:.375rem;--radius-md:.5rem;--radius-lg:.75rem;--radius-xl:1rem;--radius-full:9999px;
+  --shadow-sm:0 1px 2px oklch(0.2 0.01 80/.06);
+  --shadow-md:0 4px 12px oklch(0.2 0.01 80/.08);
+  --shadow-lg:0 12px 32px oklch(0.2 0.01 80/.12);
+  --font-body:'Satoshi',sans-serif;--font-display:'Cabinet Grotesk',sans-serif;
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;
+  --space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;
+  --space-12:3rem;--space-16:4rem;
+  --text-xs:clamp(.75rem,.7rem + .25vw,.875rem);
+  --text-sm:clamp(.875rem,.8rem + .35vw,1rem);
+  --text-base:clamp(1rem,.95rem + .25vw,1.125rem);
+  --text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);
+  --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+  --text-2xl:clamp(2rem,1.2rem + 2.5vw,3.5rem);
+  --transition-interactive:180ms cubic-bezier(.16,1,.3,1);
+}
+[data-theme="dark"]{
+  --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;
+  --color-surface-offset:#1d1c1a;--color-surface-dynamic:#2d2c2a;
+  --color-divider:#262523;--color-border:#393836;
+  --color-text:#cdccca;--color-text-muted:#797876;--color-text-faint:#5a5957;
+  --color-primary:#4f98a3;--color-primary-hover:#227f8b;
+  --color-primary-highlight:#313b3b;
+  --color-success:#6daa45;--color-error:#d163a7;
+  --color-orange:#fdab43;--color-gold:#e8af34;
+  --shadow-sm:0 1px 2px oklch(0 0 0/.2);
+  --shadow-md:0 4px 12px oklch(0 0 0/.3);
+  --shadow-lg:0 12px 32px oklch(0 0 0/.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background:var(--color-bg);line-height:1.6}
+img,svg{display:block;max-width:100%}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;transition:color var(--transition-interactive),background var(--transition-interactive),border-color var(--transition-interactive),box-shadow var(--transition-interactive)}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
+
+/* LAYOUT */
+.app{display:grid;grid-template-rows:auto 1fr;min-height:100dvh}
+header{background:var(--color-surface);border-bottom:1px solid var(--color-divider);padding:var(--space-4) var(--space-6);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:var(--space-3);text-decoration:none;color:var(--color-text)}
+.logo-mark{width:36px;height:36px;flex-shrink:0}
+.logo-text{font-family:var(--font-display);font-size:var(--text-lg);font-weight:800;letter-spacing:-.02em;line-height:1}
+.logo-sub{font-size:var(--text-xs);color:var(--color-text-muted);font-weight:400}
+.header-actions{display:flex;align-items:center;gap:var(--space-3)}
+.btn-icon{width:36px;height:36px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);transition:background var(--transition-interactive),color var(--transition-interactive)}
+.btn-icon:hover{background:var(--color-surface-offset);color:var(--color-text)}
+main{display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:1400px;margin:0 auto;width:100%;padding:var(--space-8) var(--space-6);gap:var(--space-6)}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+
+/* PANELS */
+.panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-sm)}
+.panel-header{padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--color-divider);display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
+.panel-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);display:flex;align-items:center;gap:var(--space-2)}
+.panel-icon{width:20px;height:20px;color:var(--color-primary)}
+.panel-body{padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-4);flex:1}
+
+/* FORM ELEMENTS */
+label{font-size:var(--text-sm);font-weight:500;color:var(--color-text-muted);display:block;margin-bottom:var(--space-2)}
+textarea,input,select{width:100%;background:var(--color-surface-offset);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);font:inherit;font-size:var(--text-sm);color:var(--color-text);resize:vertical;transition:border-color var(--transition-interactive),box-shadow var(--transition-interactive)}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px oklch(from var(--color-primary) l c h/.15)}
+textarea{min-height:180px;font-family:'Courier New',monospace;font-size:var(--text-xs);line-height:1.6}
+select option{background:var(--color-surface)}
+
+/* PLATFORM SELECTOR */
+.platform-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-2)}
+.platform-btn{padding:var(--space-3) var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-offset);text-align:left;cursor:pointer;transition:all var(--transition-interactive);display:flex;flex-direction:column;gap:var(--space-1)}
+.platform-btn:hover{border-color:var(--color-primary);background:var(--color-primary-highlight)}
+.platform-btn.active{border-color:var(--color-primary);background:var(--color-primary-highlight);box-shadow:0 0 0 2px oklch(from var(--color-primary) l c h/.2)}
+.platform-name{font-weight:600;font-size:var(--text-sm)}
+.platform-desc{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.4}
+.platform-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--radius-full);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:var(--space-1);width:fit-content}
+.badge-claude{background:oklch(from var(--color-orange) l c h/.15);color:var(--color-orange)}
+.badge-gemini{background:oklch(from var(--color-primary) l c h/.15);color:var(--color-primary)}
+.badge-grok{background:oklch(from var(--color-text-muted) l c h/.2);color:var(--color-text-muted)}
+.badge-perplexity{background:oklch(from var(--color-success) l c h/.15);color:var(--color-success)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);padding:var(--space-3) var(--space-5);border-radius:var(--radius-full);font-weight:600;font-size:var(--text-sm);text-decoration:none;transition:all var(--transition-interactive);border:1px solid transparent;min-height:40px}
+.btn-primary{background:var(--color-primary);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--color-primary-hover);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:transparent;border-color:var(--color-border);color:var(--color-text)}
+.btn-secondary:hover{background:var(--color-surface-offset);border-color:var(--color-text-muted)}
+.btn-ghost{background:transparent;color:var(--color-text-muted);padding:var(--space-2) var(--space-3)}
+.btn-ghost:hover{color:var(--color-text);background:var(--color-surface-offset)}
+.btn-sm{padding:var(--space-2) var(--space-4);font-size:var(--text-xs);min-height:32px}
+.btn-danger{background:oklch(from var(--color-error) l c h/.12);color:var(--color-error);border:1px solid oklch(from var(--color-error) l c h/.2)}
+.btn-danger:hover{background:oklch(from var(--color-error) l c h/.2)}
+
+/* OUTPUT PANEL */
+.output-area{background:var(--color-surface-offset);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);font-family:'Courier New',monospace;font-size:var(--text-xs);line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--color-text);flex:1;min-height:300px;overflow-y:auto;max-height:500px}
+.output-empty{color:var(--color-text-faint);font-family:var(--font-body);font-size:var(--text-sm);text-align:center;padding:var(--space-12) var(--space-8);display:flex;flex-direction:column;align-items:center;gap:var(--space-3)}
+.output-empty svg{width:40px;height:40px;color:var(--color-text-faint)}
+
+/* STATUS */
+.status-bar{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:500}
+.status-loading{background:oklch(from var(--color-gold) l c h/.1);color:var(--color-gold)}
+.status-success{background:oklch(from var(--color-success) l c h/.1);color:var(--color-success)}
+.status-error{background:oklch(from var(--color-error) l c h/.1);color:var(--color-error)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:var(--radius-full);animation:spin .7s linear infinite;flex-shrink:0}
+
+/* API KEY SECTION */
+.api-key-section{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4)}
+.api-key-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);cursor:pointer}
+.api-key-title{font-size:var(--text-sm);font-weight:600;display:flex;align-items:center;gap:var(--space-2)}
+.api-key-indicator{width:8px;height:8px;border-radius:var(--radius-full);background:var(--color-error)}
+.api-key-indicator.set{background:var(--color-success)}
+.api-key-body{display:flex;flex-direction:column;gap:var(--space-3)}
+.api-provider-tabs{display:flex;gap:var(--space-2)}
+.tab-btn{padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);font-size:var(--text-xs);font-weight:600;border:1px solid var(--color-border);background:transparent;color:var(--color-text-muted);cursor:pointer;transition:all var(--transition-interactive)}
+.tab-btn.active{background:var(--color-primary-highlight);border-color:var(--color-primary);color:var(--color-primary)}
+.tab-btn:hover:not(.active){background:var(--color-surface-offset)}
+.input-row{display:flex;gap:var(--space-2)}
+.input-row input{flex:1}
+.hint{font-size:var(--text-xs);color:var(--color-text-faint);line-height:1.5}
+.hint a{color:var(--color-primary);text-decoration:none}
+.hint a:hover{text-decoration:underline}
+
+/* BEST PRACTICES */
+.practices-toggle{font-size:var(--text-xs);color:var(--color-text-muted);display:flex;align-items:center;gap:var(--space-2);cursor:pointer;background:none;border:none;padding:0}
+.practices-toggle:hover{color:var(--color-text)}
+.practices-body{display:none;margin-top:var(--space-3);padding:var(--space-4);background:var(--color-surface-offset);border-radius:var(--radius-md);border:1px solid var(--color-divider)}
+.practices-body.open{display:block}
+.practice-item{display:flex;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--color-divider)}
+.practice-item:last-child{border-bottom:none;padding-bottom:0}
+.practice-icon{width:20px;height:20px;flex-shrink:0;margin-top:2px;color:var(--color-primary)}
+.practice-content h4{font-size:var(--text-sm);font-weight:600;margin-bottom:2px}
+.practice-content p{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.5}
+
+/* OUTPUT ACTIONS */
+.output-actions{display:flex;gap:var(--space-2);flex-wrap:wrap}
+
+/* SECTIONS */
+.section-divider{height:1px;background:var(--color-divider);margin:var(--space-2) 0}
+.field-group{display:flex;flex-direction:column;gap:var(--space-2)}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:1000;display:flex;flex-direction:column;gap:var(--space-2);pointer-events:none}
+.toast{padding:var(--space-3) var(--space-4);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:var(--text-sm);font-weight:500;pointer-events:all;animation:slideIn .3s ease forwards;display:flex;align-items:center;gap:var(--space-2)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast.success{border-color:oklch(from var(--color-success) l c h/.3);color:var(--color-success)}
+.toast.error{border-color:oklch(from var(--color-error) l c h/.3);color:var(--color-error)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+
+/* ─── SPLASH SCREEN ─── */
+body.splash-active { overflow:hidden; }
+.splash-screen {
+  position:fixed; inset:0; z-index:2400;
+  display:grid; place-items:center; padding:1.5rem; overflow:hidden;
+  background:
+    radial-gradient(circle at top left, rgba(108,165,255,0.28), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(33,71,170,0.24), transparent 30%),
+    linear-gradient(145deg, #09132f 0%, #133271 48%, #eff4ff 100%);
+  transition:opacity 0.7s ease, visibility 0.7s ease;
+}
+.splash-screen.is-hidden { opacity:0; visibility:hidden; pointer-events:none; }
+
+.splash-watermark {
+  position:absolute; aspect-ratio:1/1;
+  filter:grayscale(1) brightness(1.85) contrast(1.12);
+  mix-blend-mode:screen; pointer-events:none; transform-origin:center; z-index:0;
+}
+.splash-watermark img { width:100%; height:100%; object-fit:contain; display:block; }
+.splash-watermark.wm-1 { right:-3vw; bottom:-8vh; width:min(52vw,680px); opacity:0.25; filter:grayscale(1) brightness(2.05) contrast(1.16); transform:rotate(-11deg); }
+.splash-watermark.wm-2 { left:-6vw; top:-9vh; width:min(32vw,380px); opacity:0.13; filter:grayscale(1) brightness(1.7) contrast(1.02) blur(1px); transform:rotate(18deg); }
+.splash-watermark.wm-3 { right:28vw; top:32vh; width:min(18vw,220px); opacity:0.1; filter:grayscale(1) brightness(1.65) contrast(1) blur(1.5px); transform:rotate(-6deg); }
+.splash-watermark.wm-4 { left:18vw; bottom:8vh; width:min(22vw,260px); opacity:0.09; filter:grayscale(1) brightness(1.6) contrast(0.98) blur(2px); transform:rotate(10deg); }
+.splash-watermark.wm-5 { right:12vw; top:10vh; width:min(16vw,180px); opacity:0.11; filter:grayscale(1) brightness(1.8) contrast(1.04) blur(0.8px); transform:rotate(22deg); }
+
+.splash-shell {
+  position:relative; z-index:1; width:min(1040px,100%);
+  display:grid; grid-template-columns:minmax(260px,0.9fr) minmax(320px,1.1fr);
+  gap:1.5rem; align-items:stretch;
+}
+
+.splash-portrait-panel {
+  position:relative; min-height:460px; border-radius:28px; overflow:hidden;
+  border:1px solid rgba(255,255,255,0.16); background:#132858;
+  box-shadow:0 28px 70px rgba(3,11,35,0.34);
+}
+.splash-portrait-panel img { width:100%; height:100%; object-fit:cover; display:block; }
+.splash-portrait-panel::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(9,19,47,0.02) 0%, rgba(9,19,47,0.12) 38%, rgba(9,19,47,0.56) 100%);
+}
+.splash-portrait-badge {
+  position:absolute; left:1.25rem; bottom:1.25rem; z-index:1;
+  display:grid; gap:6px; padding:1rem 1.25rem; border-radius:22px;
+  background:rgba(9,19,47,0.58); backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,0.14); color:#f4f7ff;
+}
+.splash-portrait-badge strong { font-size:1.125rem; font-weight:800; letter-spacing:-0.02em; }
+.splash-portrait-badge span { font-size:0.875rem; color:rgba(244,247,255,0.76); }
+
+.splash-card {
+  display:grid; gap:1.25rem; align-content:center;
+  padding:clamp(1.5rem,1rem + 2vw,2.75rem); border-radius:30px;
+  background:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.48);
+  backdrop-filter:blur(20px); box-shadow:0 30px 80px rgba(8,18,48,0.26);
+}
+.splash-brand { display:flex; align-items:center; gap:1rem; }
+.splash-brand img {
+  width:58px; height:58px; border-radius:18px; object-fit:cover;
+  border:1px solid rgba(33,71,170,0.1); box-shadow:0 12px 28px rgba(26,53,125,0.18);
+}
+.splash-kicker { font-size:11px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#5d75b0; }
+.splash-brand-name { font-size:1.125rem; font-weight:800; color:#203878; letter-spacing:-0.02em; }
+
+.splash-title {
+  font-size:clamp(1.75rem,1.3rem + 1.4vw,3rem); font-weight:800;
+  line-height:1.08; letter-spacing:-0.04em; color:#0f214c; max-width:16ch;
+}
+.splash-text { font-size:1rem; line-height:1.75; color:#42557f; max-width:52ch; }
+
+.splash-points { display:grid; gap:10px; }
+.splash-point { display:flex; align-items:flex-start; gap:10px; font-size:0.9375rem; line-height:1.65; color:#314669; }
+.splash-point::before {
+  content:''; width:9px; height:9px; border-radius:999px; flex:0 0 auto; margin-top:8px;
+  background:linear-gradient(135deg,#2147aa,#6ca5ff); box-shadow:0 0 0 5px rgba(33,71,170,0.08);
+}
+
+.splash-footer {
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:0.75rem; padding-top:1rem; border-top:1px solid rgba(33,71,170,0.12);
+}
+.splash-status { display:grid; gap:8px; min-width:min(320px,100%); }
+.splash-status-line {
+  display:flex; align-items:center; gap:10px;
+  font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#5a72a8;
+}
+.splash-status-dot {
+  width:10px; height:10px; border-radius:999px;
+  background:linear-gradient(135deg,#2147aa,#6ca5ff);
+  box-shadow:0 0 0 8px rgba(33,71,170,0.08);
+  animation:splash-pulse 1.4s ease-in-out infinite;
+}
+.splash-progress {
+  height:10px; border-radius:999px;
+  background:linear-gradient(180deg,rgba(207,219,247,0.98) 0%,rgba(224,233,251,0.9) 100%);
+  overflow:hidden; border:1px solid rgba(111,142,214,0.28);
+  box-shadow:inset 0 1px 3px rgba(26,53,125,0.08);
+}
+.splash-progress > span {
+  display:block; width:100%; height:100%;
+  background:linear-gradient(90deg,#2147aa 0%,#3c6ee0 42%,#8eb7ff 72%,#d9e6ff 100%);
+  box-shadow:0 0 18px rgba(76,120,226,0.35);
+  transform-origin:left center;
+  animation:splashLoad 5s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.splash-meta { font-size:12px; color:#6077ab; }
+
+@keyframes splashLoad { 0% { transform:scaleX(0.08); opacity:0.35; } 100% { transform:scaleX(1); opacity:1; } }
+@keyframes splash-pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.85); } }
+
+@media (max-width:980px) {
+  .splash-shell { grid-template-columns:1fr; }
+  .splash-portrait-panel { min-height:320px; max-height:380px; }
+  .splash-card { order:-1; }
+}
+@media (max-width:640px) {
+  .splash-screen { padding:1rem; }
+  .splash-watermark.wm-1 { width:88vw; right:-24vw; bottom:0; opacity:0.2; }
+  .splash-watermark.wm-2 { width:54vw; left:-18vw; top:-1vh; opacity:0.1; }
+  .splash-card { padding:1.25rem; }
+  .splash-brand img { width:52px; height:52px; }
+  .splash-title { max-width:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ SPLASH SCREEN ═══ -->
+<div class="splash-screen" id="splashScreen">
+  <div class="splash-watermark wm-1"><img src="assets/logo-dirk.jpg" alt=""></div>
+  <div class="splash-watermark wm-2"><img src="assets/logo-dirk.jpg" alt=""></div>
+  <div class="splash-watermark wm-3"><img src="assets/logo-dirk.jpg" alt=""></div>
+  <div class="splash-watermark wm-4"><img src="assets/logo-dirk.jpg" alt=""></div>
+  <div class="splash-watermark wm-5"><img src="assets/logo-dirk.jpg" alt=""></div>
+
+  <div class="splash-shell">
+    <div class="splash-portrait-panel">
+      <img src="assets/dirk-portrait.jpg" alt="Dr. Dirk Kötting">
+      <div class="splash-portrait-badge">
+        <strong>Dr. Dirk Kötting</strong>
+        <span>KI-Governance · Prompt Engineering · LLM-Architektur</span>
+      </div>
+    </div>
+
+    <div class="splash-card">
+      <div class="splash-brand">
+        <img src="assets/logo-dirk.jpg" alt="Dr. DirKInstitute Logo">
+        <div>
+          <div class="splash-kicker">LLM Skill Transformer</div>
+          <div class="splash-brand-name">Dr. DirKInstitute</div>
+        </div>
+      </div>
+
+      <h1 class="splash-title">JSON Transformer — Cross-Platform Skill&nbsp;Conversion</h1>
+
+      <div class="splash-copy">
+        <p class="splash-text">ChatGPT-Konfigurationen strukturiert in produktionsreife Claude Skills, Gemini Gems, Grok System Prompts und Perplexity Spaces überführen.</p>
+      </div>
+
+      <div class="splash-points">
+        <div class="splash-point">Plattformgerechte Konvertierung mit Best-Practice-Mapping — kein manuelles Prompt-Rewriting mehr.</div>
+        <div class="splash-point">Regelbasierte Transformation mit optionaler KI-Veredelung über OpenAI- oder Anthropic-API.</div>
+        <div class="splash-point">Export-ready: Ergebnisse direkt als Skill, Gem oder System Prompt einsatzbereit.</div>
+      </div>
+
+      <div class="splash-footer">
+        <div class="splash-status">
+          <div class="splash-status-line">
+            <span class="splash-status-dot"></span>
+            Transformer wird initialisiert
+          </div>
+          <div class="splash-progress"><span></span></div>
+        </div>
+        <div class="splash-meta">K&N EDV Konzepte GmbH · Dr. DirKInstitute</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <header>
+    <a class="logo" href="#">
+      <svg class="logo-mark" viewBox="0 0 36 36" fill="none" aria-label="JSON Transformer Logo">
+        <rect width="36" height="36" rx="10" fill="var(--color-primary)" opacity=".15"/>
+        <rect x="6" y="6" width="24" height="24" rx="7" stroke="var(--color-primary)" stroke-width="1.5" fill="none"/>
+        <path d="M10 14h4M10 18h4M10 22h4" stroke="var(--color-primary)" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M18 13l5 5-5 5" stroke="var(--color-gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div>
+        <div class="logo-text">JSON Transformer</div>
+        <div class="logo-sub">cGPT → Claude / Gemini / Grok / Perplexity</div>
+      </div>
+    </a>
+    <div class="header-actions">
+      <button class="btn-icon" data-theme-toggle aria-label="Farbschema wechseln">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- INPUT PANEL -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg class="panel-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h12M4 10h12M4 14h8"/></svg>
+          Input — ChatGPT JSON
+        </div>
+        <div style="display:flex;gap:var(--space-2)">
+          <button class="btn btn-secondary btn-sm" onclick="loadSample('cgpt')">cGPT Beispiel</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadSample('project')">Projekt Beispiel</button>
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <!-- API KEY -->
+        <div class="api-key-section">
+          <div class="api-key-header" onclick="toggleApiKey()">
+            <div class="api-key-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+              KI-API Konfiguration
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--space-2)">
+              <div id="apiIndicator" class="api-key-indicator"></div>
+              <svg id="apiToggleIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .2s"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+          <div id="apiKeyBody" class="api-key-body" style="display:none">
+            <div class="api-provider-tabs">
+              <button class="tab-btn active" onclick="setProvider('openai',this)">OpenAI</button>
+              <button class="tab-btn" onclick="setProvider('anthropic',this)">Anthropic</button>
+            </div>
+            <div class="input-row">
+              <input type="password" id="apiKeyInput" placeholder="sk-..." autocomplete="off"/>
+              <button class="btn btn-primary btn-sm" onclick="saveApiKey()">Speichern</button>
+              <button class="btn btn-danger btn-sm" onclick="clearApiKey()">×</button>
+            </div>
+            <p class="hint" id="apiHint">
+              OpenAI API Key — <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>
+              Der Key bleibt nur im Browser (Memory) — wird nie gespeichert oder übertragen.
+            </p>
+          </div>
+        </div>
+
+        <!-- TARGET PLATFORM -->
+        <div class="field-group">
+          <label>Ziel-Platform</label>
+          <div class="platform-grid">
+            <button class="platform-btn active" onclick="selectPlatform('claude',this)">
+              <div class="platform-name">Claude Skill</div>
+              <div class="platform-desc">Anthropic Claude — strukturierter System Prompt als Skill/Project</div>
+              <div class="platform-badge badge-claude">Anthropic</div>
+            </button>
+            <button class="platform-btn" onclick="selectPlatform('gemini',this)">
+              <div class="platform-name">Gemini Gem</div>
+              <div class="platform-desc">Google Gemini — Custom Gem mit Persona & Instruktionen</div>
+              <div class="platform-badge badge-gemini">Google</div>
+            </button>
+            <button class="platform-btn" onclick="selectPlatform('grok',this)">
+              <div class="platform-name">Grok System</div>
+              <div class="platform-desc">xAI Grok — System Prompt mit Grok-spezifischen Konventionen</div>
+              <div class="platform-badge badge-grok">xAI</div>
+            </button>
+            <button class="platform-btn" onclick="selectPlatform('perplexity',this)">
+              <div class="platform-name">Perplexity Space</div>
+              <div class="platform-desc">Perplexity AI — Space Instructions mit Fokus auf Recherche</div>
+              <div class="platform-badge badge-perplexity">Perplexity</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- JSON INPUT -->
+        <div class="field-group">
+          <label>JSON Input (cGPT oder Projekt)</label>
+          <textarea id="jsonInput" placeholder='Füge dein ChatGPT JSON hier ein...&#10;&#10;z.B.:&#10;{&#10;  "name": "TrainingsDesigner",&#10;  "system_prompt": "...",&#10;  "capabilities": ["Web Search"]&#10;}'></textarea>
+        </div>
+
+        <!-- BEST PRACTICES TOGGLE -->
+        <div>
+          <button class="practices-toggle" onclick="togglePractices()" id="practicesBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            Best Practices für <span id="currentPlatformLabel">Claude</span> anzeigen
+            <svg id="practicesIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .2s"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="practicesBody" class="practices-body">
+            <!-- dynamisch befüllt -->
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="transformBtn" onclick="transform()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+          Transformieren
+        </button>
+
+      </div>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg class="panel-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 3H7a2 2 0 0 0-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V5a2 2 0 0 0-2-2z"/></svg>
+          Output — Transformiertes Format
+        </div>
+        <div id="outputPlatformBadge" style="display:none"></div>
+      </div>
+      <div class="panel-body">
+
+        <div id="statusBar" style="display:none"></div>
+
+        <div id="outputContainer">
+          <div class="output-empty" id="emptyState">
+            <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="4" y="4" width="32" height="32" rx="8"/>
+              <path d="M12 14h16M12 20h10M12 26h8"/>
+              <path d="M26 22l6 6M30 22l-4 4" stroke-width="2"/>
+            </svg>
+            <div>Transformiertes Format erscheint hier</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-faint);max-width:280px;text-align:center">Wähle eine Platform, füge JSON ein und klicke <strong>Transformieren</strong></div>
+          </div>
+          <pre class="output-area" id="outputArea" style="display:none"></pre>
+        </div>
+
+        <div class="output-actions" id="outputActions" style="display:none">
+          <button class="btn btn-primary btn-sm" onclick="copyOutput()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Kopieren
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="downloadOutput()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Download
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="clearAll()">
+            Zurücksetzen
+          </button>
+        </div>
+
+        <!-- PLATTFORM INFO -->
+        <div id="platformInfo" style="margin-top:auto"></div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ─── SPLASH SCREEN ──────────────────────────────────────
+(function() {
+  var SPLASH_DURATION = 5000;
+  document.body.classList.add('splash-active');
+  setTimeout(function() {
+    var splash = document.getElementById('splashScreen');
+    if (splash) splash.classList.add('is-hidden');
+    document.body.classList.remove('splash-active');
+  }, SPLASH_DURATION);
+})();
+
+// STATE
+let state = {
+  platform: 'claude',
+  apiKey: null,
+  apiProvider: 'openai',
+  output: null
+};
+
+// BEST PRACTICES per platform
+const bestPractices = {
+  claude: [
+    { title: 'Klare Rollendefiniton', desc: 'Claude Skills beginnen mit einer expliziten Rollenbeschreibung: "Du bist ein spezialisierter Assistent für..."' },
+    { title: 'XML-Tags für Struktur', desc: 'Nutze <instructions>, <context>, <examples> als Strukturierungselemente im System Prompt.' },
+    { title: 'Konstitutionelle Grenzen', desc: 'Definiere explizit, was der Skill NICHT tut. Claude folgt negativen Grenzen sehr präzise.' },
+    { title: 'Reasoning aktivieren', desc: 'Füge "Denke Schritt für Schritt" oder "Analysiere erst, dann antworte" für komplexe Aufgaben ein.' },
+    { title: 'Keine Plugin-Referenzen', desc: 'ChatGPT-spezifische Funktionen (Dalle, Browsing-Buttons) müssen entfernt oder abstrahiert werden.' },
+  ],
+  gemini: [
+    { title: 'Persona & Name', desc: 'Gemini Gems erwarten eine klar benannte Persona mit definierten Charaktereigenschaften.' },
+    { title: 'Google-Integration', desc: 'Nutze explizit Google-Tools: Google Search, Google Workspace-Referenzen wenn relevant.' },
+    { title: 'Multimodal beschreiben', desc: 'Gemini versteht Bilder, Audio, Video — erwähne explizit welche Modalitäten der Gem nutzen soll.' },
+    { title: 'Markdown strukturiert', desc: 'Gemini rendert Markdown gut — nutze Überschriften, Listen und Bold für strukturierte Outputs.' },
+    { title: 'Sprachkonsistenz', desc: 'Definiere die Ausgabesprache explizit, da Gemini bei gemischten Prompts die Sprache wechseln kann.' },
+  ],
+  grok: [
+    { title: 'Direkter, klarer Stil', desc: 'Grok bevorzugt direkte, prägnante Instruktionen ohne übermäßige Höflichkeitsfloskeln.' },
+    { title: 'Realtime-Wissen nutzen', desc: 'Grok hat Zugriff auf aktuelle X/Twitter-Daten — nutze dies für zeitkritische Anwendungen.' },
+    { title: 'Humor-Param optional', desc: 'Grok unterstützt einen humorvollen Modus — definiere ob der Skill ernst oder locker sein soll.' },
+    { title: 'Keine langen Preambles', desc: 'Grok reagiert besser auf kurze, klare Instruktionen als auf lange, verschachtelte Prompts.' },
+    { title: 'X-Kontext', desc: 'Wenn relevant: definiere ob der Skill X-Posts, Threads oder Community-Notes einbeziehen soll.' },
+  ],
+  perplexity: [
+    { title: 'Recherche-Fokus', desc: 'Perplexity Spaces sind Research-optimiert — stelle Instruktionen auf Quellensuche und Fakten-Verifikation aus.' },
+    { title: 'Quellen-Anforderungen', desc: 'Definiere explizit: "Zitiere immer Quellen", "Bevorzuge wissenschaftliche Quellen", "Aktuelle Quellen bevorzugen".' },
+    { title: 'Zusammenfassungsformat', desc: 'Perplexity strukturiert gerne: Kurzzusammenfassung → Details → Quellen. Nutze dieses Format.' },
+    { title: 'Keine Halluzinations-Prompts', desc: 'Vermeide Prompts die Kreativität über Faktentreue stellen — Perplexity ist kein Kreativ-LLM.' },
+    { title: 'Focus Mode', desc: 'Definiere den Suchfokus: Web, Academic, YouTube, Reddit je nach Anwendungsfall.' },
+  ]
+};
+
+const platformLabels = { claude: 'Claude', gemini: 'Gemini', grok: 'Grok', perplexity: 'Perplexity' };
+const platformColors = { claude: 'badge-claude', gemini: 'badge-gemini', grok: 'badge-grok', perplexity: 'badge-perplexity' };
+
+// THEME TOGGLE
+(function(){
+  const t=document.querySelector('[data-theme-toggle]');
+  const r=document.documentElement;
+  let d=r.getAttribute('data-theme')||'dark';
+  updateToggleIcon(d,t);
+  if(t) t.addEventListener('click',()=>{
+    d=d==='dark'?'light':'dark';
+    r.setAttribute('data-theme',d);
+    updateToggleIcon(d,t);
+  });
+  function updateToggleIcon(theme,btn){
+    if(!btn) return;
+    btn.innerHTML=theme==='dark'
+      ?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      :'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+})();
+
+// PLATFORM SELECT
+function selectPlatform(p, btn) {
+  state.platform = p;
+  document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('currentPlatformLabel').textContent = platformLabels[p];
+  updatePractices();
+}
+
+// API KEY
+function toggleApiKey() {
+  const body = document.getElementById('apiKeyBody');
+  const icon = document.getElementById('apiToggleIcon');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'flex';
+  icon.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function setProvider(p, btn) {
+  state.apiProvider = p;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const hints = {
+    openai: 'OpenAI API Key — <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>Modell: gpt-4o. Der Key bleibt nur im Browser-Memory.',
+    anthropic: 'Anthropic API Key — <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a><br>Modell: claude-3-5-sonnet. Der Key bleibt nur im Browser-Memory.'
+  };
+  document.getElementById('apiHint').innerHTML = hints[p];
+  document.getElementById('apiKeyInput').placeholder = p === 'openai' ? 'sk-...' : 'sk-ant-...';
+}
+
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) { showToast('Kein API Key eingegeben', 'error'); return; }
+  state.apiKey = val;
+  document.getElementById('apiIndicator').classList.add('set');
+  document.getElementById('apiKeyInput').value = '';
+  showToast('API Key gespeichert (nur im Speicher)', 'success');
+  toggleApiKey();
+}
+
+function clearApiKey() {
+  state.apiKey = null;
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('apiIndicator').classList.remove('set');
+  showToast('API Key gelöscht', 'success');
+}
+
+// BEST PRACTICES
+function togglePractices() {
+  const body = document.getElementById('practicesBody');
+  const icon = document.getElementById('practicesIcon');
+  const open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  icon.style.transform = open ? '' : 'rotate(180deg)';
+  if (!open) updatePractices();
+}
+
+function updatePractices() {
+  const practices = bestPractices[state.platform] || [];
+  const body = document.getElementById('practicesBody');
+  body.innerHTML = practices.map(p => `
+    <div class="practice-item">
+      <svg class="practice-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <div class="practice-content"><h4>${p.title}</h4><p>${p.desc}</p></div>
+    </div>
+  `).join('');
+}
+
+// SAMPLE DATA
+function loadSample(type) {
+  const samples = {
+    cgpt: JSON.stringify({
+      "name": "TrainingsDesigner",
+      "url": "https://chatgpt.com/g/g-0xl2V1Yve-trainingsdesigner",
+      "id": "g-0xl2V1Yve",
+      "description": "Creates customized training concepts based on user input.",
+      "system_prompt": "This GPT assists users in creating customized training concepts based on their input. It begins by offering the user a choice of language: German or English, with the prompt 'Choose Language / Sprache wählen.' After selecting the language, all further communication takes place in the chosen language. Next, it asks what type of training concept the user is looking for by presenting the following options: [1] a remote workshop, [2] an onsite workshop, [3] remote training, [4] onsite training, or [5] the user's own suggestion.",
+      "conversation_starters": ["Was für ein Trainingskonzept benötigst du?", "Möchtest du Dokumente hochladen?"],
+      "capabilities": ["Web Search"],
+      "actions": ["Thinking"]
+    }, null, 2),
+    project: JSON.stringify({
+      "id": "g-p-project123",
+      "name": "KI Governance Projekt",
+      "instructions": "Dieses Projekt unterstützt bei der Entwicklung von KI-Governance-Frameworks. Fokus auf EU AI Act, DSGVO, ISO 42001 und NIS2.",
+      "files": ["governance_framework.pdf", "eu_ai_act_summary.pdf"],
+      "conversations": [
+        { "title": "AI Policy Review", "messages": [
+          { "role": "user", "text": "Analysiere unsere aktuelle KI-Policy" },
+          { "role": "assistant", "text": "Ich analysiere die Policy auf EU AI Act Konformität..." }
+        ]}
+      ]
+    }, null, 2)
+  };
+  document.getElementById('jsonInput').value = samples[type];
+  showToast(`${type === 'cgpt' ? 'cGPT' : 'Projekt'} Beispiel geladen`, 'success');
+}
+
+// SYSTEM PROMPTS für Transformation
+function buildTransformPrompt(parsedJSON, platform) {
+  const platformGuides = {
+    claude: `Du bist ein Experte für Claude AI Skills und System Prompts. 
+Transformiere das folgende ChatGPT Custom GPT JSON in einen optimierten Claude Skill System Prompt.
+
+CLAUDE SKILL ANFORDERUNGEN:
+- Beginne mit einer klaren Rollendefinition in XML: <role>...</role>
+- Nutze <instructions> für Hauptanweisungen
+- Nutze <constraints> für Einschränkungen/Was der Skill NICHT tut
+- Nutze <conversation_style> für Kommunikationsstil
+- Nutze <examples> wenn Starter-Prompts vorhanden sind
+- Entferne alle ChatGPT-spezifischen Referenzen (Plugins, DALL-E, ChatGPT-URLs)
+- Aktiviere Reasoning wo sinnvoll ("Denke Schritt für Schritt")
+- Behalte Mehrsprachigkeit wenn im Original definiert
+- Gib NUR den fertigen System Prompt zurück, kein JSON`,
+
+    gemini: `Du bist ein Experte für Google Gemini Gems.
+Transformiere das folgende ChatGPT Custom GPT JSON in Gemini Gem Instruktionen.
+
+GEMINI GEM ANFORDERUNGEN:
+- Beginne mit: "# [Name] — Gemini Gem"
+- Definiere eine klare Persona mit Namen und Charaktereigenschaften
+- Sektion "## Hauptaufgabe" mit klaren Instruktionen
+- Sektion "## Kommunikationsstil" 
+- Sektion "## Einschränkungen"
+- Nutze Google-native Konzepte (Google Search, Google Workspace) wenn sinnvoll
+- Beschreibe multimodale Fähigkeiten explizit wenn relevant
+- Markdown-strukturiert für optimales Rendering
+- Gib NUR die fertigen Gem-Instruktionen zurück`,
+
+    grok: `Du bist ein Experte für xAI Grok System Prompts.
+Transformiere das folgende ChatGPT Custom GPT JSON in einen Grok System Prompt.
+
+GROK ANFORDERUNGEN:
+- Direkter, prägnanter Stil ohne Floskeln
+- Beginne mit: "You are [Name], a specialized AI assistant."
+- Kurze, klare Instruktionsblöcke
+- Definiere explizit: Ton (ernst/humorvoll), Umfang, Grenzen
+- Optional: Hinweis auf Realtime X/Twitter-Daten wenn relevant
+- Keine langen verschachtelten Strukturen
+- Englisch bevorzugt, außer Original ist klar deutsch
+- Gib NUR den fertigen System Prompt zurück`,
+
+    perplexity: `Du bist ein Experte für Perplexity AI Space Instructions.
+Transformiere das folgende ChatGPT Custom GPT JSON in Perplexity Space Instructions.
+
+PERPLEXITY ANFORDERUNGEN:
+- Beginne mit klarer Beschreibung: was dieser Space recherchiert
+- Definiere Quellen-Anforderungen explizit (Web/Academic/YouTube/Reddit)
+- Sektion "Recherche-Fokus" mit Kernthemen
+- Sektion "Ausgabeformat": Kurzzusammenfassung → Details → Quellen
+- Definiere Sprache und Fachtiefe
+- Betone Faktentreue über Kreativität
+- Kein Fokus auf Konversation, sondern auf Informationsabruf
+- Gib NUR die fertigen Space Instructions zurück`
+  };
+
+  return `${platformGuides[platform]}
+
+ORIGINAL ChatGPT JSON:
+${JSON.stringify(parsedJSON, null, 2)}
+
+Erstelle jetzt den optimierten ${platformLabels[platform]} Output:`;
+}
+
+// TRANSFORM (mit KI)
+async function transformWithAI(parsedJSON) {
+  const prompt = buildTransformPrompt(parsedJSON, state.platform);
+
+  if (state.apiProvider === 'openai') {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: 'Du bist ein Experte für LLM Prompt Engineering und AI Platform Migration.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 2000
+      })
+    });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || `API Fehler: ${resp.status}`);
+    }
+    const data = await resp.json();
+    return data.choices[0].message.content;
+
+  } else {
+    // Anthropic
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': state.apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || `API Fehler: ${resp.status}`);
+    }
+    const data = await resp.json();
+    return data.content[0].text;
+  }
+}
+
+// TRANSFORM (ohne KI — regelbasiert)
+function transformRuleBased(parsed) {
+  const name = parsed.name || parsed.id || 'Unnamed';
+  const desc = parsed.description || '';
+  const systemPrompt = parsed.system_prompt || parsed.instructions || '';
+  const starters = parsed.conversation_starters || [];
+  const caps = parsed.capabilities || [];
+
+  switch(state.platform) {
+    case 'claude':
+      return `<role>
+Du bist ${name}, ein spezialisierter KI-Assistent.${desc ? '\n' + desc : ''}
+</role>
+
+<instructions>
+${systemPrompt || 'Keine spezifischen Instruktionen definiert.'}
+</instructions>
+
+<constraints>
+- Bleibe immer im definierten Aufgabenbereich
+- Verweise bei Bedarf auf verfügbare Optionen
+${caps.includes('Web Search') ? '- Nutze Web-Suche für aktuelle Informationen' : ''}
+</constraints>
+
+<conversation_style>
+- Strukturiert und klar
+- Frage bei Unklarheiten nach
+${starters.length ? `\n<examples>\nBeispiel-Einstiege:\n${starters.slice(0,3).map(s => `- ${s}`).join('\n')}\n</examples>` : ''}
+</conversation_style>`;
+
+    case 'gemini':
+      return `# ${name} — Gemini Gem
+
+## Persona
+Du bist **${name}**${desc ? ': ' + desc : ''}.
+
+## Hauptaufgabe
+${systemPrompt || 'Definiere hier die Hauptaufgabe.'}
+
+## Kommunikationsstil
+- Klar und strukturiert
+- Nutze Markdown für Überschriften und Listen
+- Stelle Rückfragen wenn Kontext fehlt
+
+## Einschränkungen
+- Bleibe im definierten Themenbereich
+${caps.includes('Web Search') ? '- Nutze Google Search für aktuelle Informationen\n' : ''}
+${starters.length ? `\n## Beispiel-Eingaben\n${starters.slice(0,3).map(s => `- "${s}"`).join('\n')}` : ''}`;
+
+    case 'grok':
+      return `You are ${name}, a specialized AI assistant.${desc ? ' ' + desc : ''}
+
+## Core Instructions
+${systemPrompt || 'Define core behavior here.'}
+
+## Behavior Rules
+- Be direct and concise
+- No unnecessary preambles
+${caps.includes('Web Search') ? '- Use real-time data when relevant\n' : ''}
+- Stay within defined scope
+
+## Tone
+Professional, clear, efficient.`;
+
+    case 'perplexity':
+      return `# ${name} — Perplexity Space
+
+## Recherche-Fokus
+${desc || name}
+
+## Hauptaufgabe
+${systemPrompt || 'Recherchiere und beantworte Fragen zu diesem Themenbereich.'}
+
+## Ausgabeformat
+1. **Kurzzusammenfassung** (2-3 Sätze)
+2. **Details** mit Quellenbelegen
+3. **Quellen** (mindestens 2-3 verifizierte Quellen)
+
+## Quellen-Anforderungen
+- Bevorzuge aktuelle Quellen (< 2 Jahre)
+- Wissenschaftliche Quellen bevorzugen wo verfügbar
+- Immer Quellen zitieren
+
+## Einschränkungen
+- Nur faktisch belegte Informationen
+- Bei Unsicherheit: klar kommunizieren`;
+  }
+}
+
+// MAIN TRANSFORM
+async function transform() {
+  const jsonText = document.getElementById('jsonInput').value.trim();
+  if (!jsonText) { showToast('Kein JSON eingefügt', 'error'); return; }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonText);
+  } catch(e) {
+    showStatus('error', 'Ungültiges JSON: ' + e.message);
+    return;
+  }
+
+  const btn = document.getElementById('transformBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Transformiere...';
+
+  hideOutput();
+  showStatus('loading', state.apiKey ? `KI-Transformation via ${state.apiProvider === 'openai' ? 'OpenAI gpt-4o' : 'Claude claude-3-5-sonnet'}...` : 'Regelbasierte Transformation (kein API Key)...');
+
+  try {
+    let result;
+    if (state.apiKey) {
+      result = await transformWithAI(parsed);
+    } else {
+      await new Promise(r => setTimeout(r, 600)); // kleine Verzögerung für UX
+      result = transformRuleBased(parsed);
+    }
+
+    state.output = result;
+    showOutput(result);
+    showStatus('success', `✓ Erfolgreich transformiert → ${platformLabels[state.platform]}${!state.apiKey ? ' (regelbasiert — API Key für KI-Optimierung)' : ''}`);
+
+    // Badge
+    const badge = document.getElementById('outputPlatformBadge');
+    badge.innerHTML = `<span class="platform-badge ${platformColors[state.platform]}">${platformLabels[state.platform]}</span>`;
+    badge.style.display = 'block';
+
+  } catch(e) {
+    showStatus('error', 'Fehler: ' + e.message);
+    if (e.message.includes('401') || e.message.includes('Unauthorized')) {
+      showToast('API Key ungültig oder abgelaufen', 'error');
+    }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg> Transformieren';
+  }
+}
+
+function showStatus(type, msg) {
+  const bar = document.getElementById('statusBar');
+  const icons = {
+    loading: '<div class="spinner"></div>',
+    success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+    error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+  };
+  bar.className = `status-bar status-${type}`;
+  bar.innerHTML = `${icons[type]} ${msg}`;
+  bar.style.display = 'flex';
+}
+
+function showOutput(text) {
+  document.getElementById('emptyState').style.display = 'none';
+  const area = document.getElementById('outputArea');
+  area.style.display = 'block';
+  area.textContent = text;
+  document.getElementById('outputActions').style.display = 'flex';
+}
+
+function hideOutput() {
+  document.getElementById('outputArea').style.display = 'none';
+  document.getElementById('outputActions').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'flex';
+  document.getElementById('outputPlatformBadge').style.display = 'none';
+}
+
+function clearAll() {
+  document.getElementById('jsonInput').value = '';
+  hideOutput();
+  document.getElementById('statusBar').style.display = 'none';
+  state.output = null;
+  showToast('Zurückgesetzt', 'success');
+}
+
+async function copyOutput() {
+  if (!state.output) return;
+  try {
+    await navigator.clipboard.writeText(state.output);
+    showToast('In Zwischenablage kopiert', 'success');
+  } catch(e) {
+    showToast('Kopieren fehlgeschlagen', 'error');
+  }
+}
+
+function downloadOutput() {
+  if (!state.output) return;
+  const ext = { claude: 'claude-skill.md', gemini: 'gemini-gem.md', grok: 'grok-system.txt', perplexity: 'perplexity-space.md' };
+  const blob = new Blob([state.output], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = ext[state.platform] || 'transformed.txt';
+  a.click();
+  showToast('Download gestartet', 'success');
+}
+
+// TOAST
+function showToast(msg, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  const icons = {
+    success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+    error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+  };
+  t.className = `toast ${type}`;
+  t.innerHTML = `${icons[type]} ${msg}`;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// Init
+updatePractices();
+</script>
+</body>
+</html>
