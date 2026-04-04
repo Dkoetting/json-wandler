@@ -156,9 +156,197 @@ select option{background:var(--color-surface)}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+
+/* ─── SPLASH SCREEN ─── */
+body.splash-active { overflow:hidden; }
+.splash-screen {
+  position:fixed; inset:0; z-index:2400;
+  display:grid; place-items:center; padding:1.5rem; overflow:hidden;
+  background:
+    radial-gradient(circle at top left, rgba(108,165,255,0.28), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(33,71,170,0.24), transparent 30%),
+    linear-gradient(145deg, #09132f 0%, #133271 48%, #eff4ff 100%);
+  transition:opacity 0.7s ease, visibility 0.7s ease;
+}
+.splash-screen.is-hidden { opacity:0; visibility:hidden; pointer-events:none; }
+
+.splash-watermark {
+  position:absolute; aspect-ratio:1/1;
+  filter:grayscale(1) brightness(1.85) contrast(1.12);
+  mix-blend-mode:screen; pointer-events:none; transform-origin:center; z-index:0;
+}
+.splash-watermark img { width:100%; height:100%; object-fit:contain; display:block; }
+.splash-watermark.wm-1 { right:-3vw; bottom:-8vh; width:min(52vw,680px); opacity:0.25; filter:grayscale(1) brightness(2.05) contrast(1.16); transform:rotate(-11deg); }
+.splash-watermark.wm-2 { left:-6vw; top:-9vh; width:min(32vw,380px); opacity:0.13; filter:grayscale(1) brightness(1.7) contrast(1.02) blur(1px); transform:rotate(18deg); }
+.splash-watermark.wm-3 { right:28vw; top:32vh; width:min(18vw,220px); opacity:0.1; filter:grayscale(1) brightness(1.65) contrast(1) blur(1.5px); transform:rotate(-6deg); }
+.splash-watermark.wm-4 { left:18vw; bottom:8vh; width:min(22vw,260px); opacity:0.09; filter:grayscale(1) brightness(1.6) contrast(0.98) blur(2px); transform:rotate(10deg); }
+.splash-watermark.wm-5 { right:12vw; top:10vh; width:min(16vw,180px); opacity:0.11; filter:grayscale(1) brightness(1.8) contrast(1.04) blur(0.8px); transform:rotate(22deg); }
+
+.splash-shell {
+  position:relative; z-index:1; width:min(1040px,100%);
+  display:grid; grid-template-columns:minmax(260px,0.9fr) minmax(320px,1.1fr);
+  gap:1.5rem; align-items:stretch;
+}
+
+.splash-portrait-panel {
+  position:relative; min-height:460px; border-radius:28px; overflow:hidden;
+  border:1px solid rgba(255,255,255,0.16); background:#132858;
+  box-shadow:0 28px 70px rgba(3,11,35,0.34);
+}
+.splash-portrait-panel img { width:100%; height:100%; object-fit:cover; display:block; }
+.splash-portrait-panel::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(9,19,47,0.02) 0%, rgba(9,19,47,0.12) 38%, rgba(9,19,47,0.56) 100%);
+}
+.splash-portrait-badge {
+  position:absolute; left:1.25rem; bottom:1.25rem; z-index:1;
+  display:grid; gap:6px; padding:1rem 1.25rem; border-radius:22px;
+  background:rgba(9,19,47,0.58); backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,0.14); color:#f4f7ff;
+}
+.splash-portrait-badge strong { font-size:1.125rem; font-weight:800; letter-spacing:-0.02em; }
+.splash-portrait-badge span { font-size:0.875rem; color:rgba(244,247,255,0.76); }
+
+.splash-card {
+  display:grid; gap:1.25rem; align-content:center;
+  padding:clamp(1.5rem,1rem + 2vw,2.75rem); border-radius:30px;
+  background:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.48);
+  backdrop-filter:blur(20px); box-shadow:0 30px 80px rgba(8,18,48,0.26);
+}
+.splash-brand { display:flex; align-items:center; gap:1rem; }
+.splash-brand img {
+  width:58px; height:58px; border-radius:18px; object-fit:cover;
+  border:1px solid rgba(33,71,170,0.1); box-shadow:0 12px 28px rgba(26,53,125,0.18);
+}
+.splash-kicker { font-size:11px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#5d75b0; }
+.splash-brand-name { font-size:1.125rem; font-weight:800; color:#203878; letter-spacing:-0.02em; }
+
+.splash-title {
+  font-size:clamp(1.75rem,1.3rem + 1.4vw,3rem); font-weight:800;
+  line-height:1.08; letter-spacing:-0.04em; color:#0f214c; max-width:16ch;
+}
+.splash-text { font-size:1rem; line-height:1.75; color:#42557f; max-width:52ch; }
+
+.splash-points { display:grid; gap:10px; }
+.splash-point { display:flex; align-items:flex-start; gap:10px; font-size:0.9375rem; line-height:1.65; color:#314669; }
+.splash-point::before {
+  content:''; width:9px; height:9px; border-radius:999px; flex:0 0 auto; margin-top:8px;
+  background:linear-gradient(135deg,#2147aa,#6ca5ff); box-shadow:0 0 0 5px rgba(33,71,170,0.08);
+}
+
+.splash-footer {
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:0.75rem; padding-top:1rem; border-top:1px solid rgba(33,71,170,0.12);
+}
+.splash-status { display:grid; gap:8px; min-width:min(320px,100%); }
+.splash-status-line {
+  display:flex; align-items:center; gap:10px;
+  font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#5a72a8;
+}
+.splash-status-dot {
+  width:10px; height:10px; border-radius:999px;
+  background:linear-gradient(135deg,#2147aa,#6ca5ff);
+  box-shadow:0 0 0 8px rgba(33,71,170,0.08);
+  animation:splash-pulse 1.4s ease-in-out infinite;
+}
+.splash-progress {
+  height:10px; border-radius:999px;
+  background:linear-gradient(180deg,rgba(207,219,247,0.98) 0%,rgba(224,233,251,0.9) 100%);
+  overflow:hidden; border:1px solid rgba(111,142,214,0.28);
+  box-shadow:inset 0 1px 3px rgba(26,53,125,0.08);
+}
+.splash-progress > span {
+  display:block; width:100%; height:100%;
+  background:linear-gradient(90deg,#2147aa 0%,#3c6ee0 42%,#8eb7ff 72%,#d9e6ff 100%);
+  box-shadow:0 0 18px rgba(76,120,226,0.35);
+  transform-origin:left center;
+  animation:splashLoad 5s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.splash-meta { font-size:12px; color:#6077ab; }
+
+@keyframes splashLoad { 0% { transform:scaleX(0.08); opacity:0.35; } 100% { transform:scaleX(1); opacity:1; } }
+@keyframes splash-pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.85); } }
+
+@media (max-width:980px) {
+  .splash-shell { grid-template-columns:1fr; }
+  .splash-portrait-panel { min-height:320px; max-height:380px; }
+  .splash-card { order:-1; }
+}
+@media (max-width:640px) {
+  .splash-screen { padding:1rem; }
+  .splash-watermark.wm-1 { width:88vw; right:-24vw; bottom:0; opacity:0.2; }
+  .splash-watermark.wm-2 { width:54vw; left:-18vw; top:-1vh; opacity:0.1; }
+  .splash-card { padding:1.25rem; }
+  .splash-brand img { width:52px; height:52px; }
+  .splash-title { max-width:none; }
+}
 </style>
 </head>
 <body>
+
+<!-- ═══ SPLASH SCREEN ═══ -->
+<div class="splash-screen" id="splashScreen">
+  <div class="splash-watermark wm-1"><img src="/static/logo-dirk.jpg" alt=""></div>
+  <div class="splash-watermark wm-2"><img src="/static/logo-dirk.jpg" alt=""></div>
+  <div class="splash-watermark wm-3"><img src="/static/logo-dirk.jpg" alt=""></div>
+  <div class="splash-watermark wm-4"><img src="/static/logo-dirk.jpg" alt=""></div>
+  <div class="splash-watermark wm-5"><img src="/static/logo-dirk.jpg" alt=""></div>
+
+  <div class="splash-shell">
+    <div class="splash-portrait-panel">
+      <img src="/static/dirk-portrait.jpg" alt="Dr. Dirk Kötting">
+      <div class="splash-portrait-badge">
+        <strong>Dr. Dirk Kötting</strong>
+        <span>KI-Governance · Prompt Engineering · LLM-Architektur</span>
+      </div>
+    </div>
+
+    <div class="splash-card">
+      <div class="splash-brand">
+        <img src="/static/logo-dirk.jpg" alt="Dr. DirKInstitute Logo">
+        <div>
+          <div class="splash-kicker">LLM Skill Transformer</div>
+          <div class="splash-brand-name">Dr. DirKInstitute</div>
+        </div>
+      </div>
+
+      <h1 class="splash-title">JSON Wandler — Cross-Platform Skill Conversion</h1>
+
+      <div class="splash-copy">
+        <p class="splash-text">ChatGPT-Konfigurationen strukturiert in produktionsreife Claude Skills, Gemini Gems, Grok System Prompts und Perplexity Spaces überführen.</p>
+      </div>
+
+      <div class="splash-points">
+        <div class="splash-point">Plattformgerechte Konvertierung mit Best-Practice-Mapping — kein manuelles Prompt-Rewriting mehr.</div>
+        <div class="splash-point">Regelbasierte Transformation mit optionaler KI-Veredelung über OpenAI- oder Anthropic-API.</div>
+        <div class="splash-point">Export-ready: Ergebnisse direkt als Skill, Gem oder System Prompt einsatzbereit.</div>
+      </div>
+
+      <div class="splash-footer">
+        <div class="splash-status">
+          <div class="splash-status-line">
+            <span class="splash-status-dot"></span>
+            Transformer wird initialisiert
+          </div>
+          <div class="splash-progress"><span></span></div>
+        </div>
+        <div class="splash-meta">K&N EDV Konzepte GmbH · Dr. DirKInstitute</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  document.body.classList.add('splash-active');
+  setTimeout(function() {
+    var s = document.getElementById('splashScreen');
+    if (s) s.classList.add('is-hidden');
+    document.body.classList.remove('splash-active');
+  }, 5000);
+})();
+</script>
+
 <div class="app">
   <header>
     <!-- k & n edv konzepte gmbh Logo (links) -->
