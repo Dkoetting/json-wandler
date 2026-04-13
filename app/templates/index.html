@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
@@ -157,6 +157,116 @@ select option{background:var(--color-surface)}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
 
+/* ─── PRICING FULLSCREEN ─── */
+.pricing-screen {
+  position:fixed; inset:0; z-index:2000;
+  display:grid; place-items:center; padding:1.5rem;
+  background:
+    radial-gradient(circle at top left, rgba(108,165,255,0.12), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(33,71,170,0.10), transparent 35%),
+    var(--color-bg);
+  transition:opacity 0.5s ease, visibility 0.5s ease;
+  overflow-y:auto;
+}
+.pricing-screen.is-hidden { opacity:0; visibility:hidden; pointer-events:none; }
+.pricing-shell {
+  max-width:520px; width:100%; display:flex; flex-direction:column;
+  align-items:center; gap:var(--space-6);
+}
+.pricing-brand {
+  display:flex; align-items:center; gap:var(--space-3); margin-bottom:var(--space-2);
+}
+.pricing-brand img { width:48px; height:48px; border-radius:var(--radius-lg); }
+.pricing-brand-text { font-family:var(--font-display); font-weight:800; font-size:var(--text-lg); color:var(--color-text); }
+.pricing-brand-sub { font-size:var(--text-xs); color:var(--color-text-muted); font-weight:400; }
+.pricing-headline {
+  font-family:var(--font-display); font-size:var(--text-xl); font-weight:800;
+  color:var(--color-text); text-align:center; line-height:1.2;
+}
+.pricing-desc {
+  font-size:var(--text-sm); color:var(--color-text-muted); text-align:center;
+  line-height:1.6; max-width:420px;
+}
+.pricing-card {
+  background:var(--color-surface); border:1px solid var(--color-border);
+  border-radius:var(--radius-xl); padding:var(--space-8) var(--space-6);
+  text-align:center; box-shadow:var(--shadow-lg); width:100%;
+  position:relative; overflow:hidden;
+}
+.pricing-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--color-primary), #6ab0ff, var(--color-primary));
+}
+.pricing-unit-label {
+  font-family:var(--font-display); font-size:var(--text-base); font-weight:700;
+  color:var(--color-text); margin-bottom:var(--space-1);
+}
+.pricing-unit-price {
+  font-size:var(--text-sm); color:var(--color-text-muted); margin-bottom:var(--space-5);
+}
+.quantity-picker {
+  display:flex; align-items:center; justify-content:center; gap:var(--space-3);
+  margin-bottom:var(--space-5);
+}
+.qty-btn {
+  width:44px; height:44px; border-radius:var(--radius-full);
+  border:2px solid var(--color-primary); background:transparent;
+  color:var(--color-primary); font-size:1.4rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all var(--transition-interactive);
+  user-select:none;
+}
+.qty-btn:hover { background:var(--color-primary); color:#fff; }
+.qty-btn:disabled { opacity:.3; cursor:not-allowed; }
+.qty-btn:disabled:hover { background:transparent; color:var(--color-primary); }
+.qty-input {
+  width:72px; height:44px; text-align:center; font-family:var(--font-display);
+  font-size:var(--text-lg); font-weight:700; color:var(--color-text);
+  background:var(--color-surface-offset); border:2px solid var(--color-border);
+  border-radius:var(--radius-md); padding:0;
+  -moz-appearance:textfield;
+}
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+.qty-input:focus { border-color:var(--color-primary); outline:none; }
+.pricing-total {
+  font-family:var(--font-display); font-size:var(--text-2xl); font-weight:800;
+  color:var(--color-primary); margin-bottom:var(--space-1);
+}
+.pricing-vat {
+  font-size:var(--text-xs); color:var(--color-text-faint); margin-bottom:var(--space-6);
+}
+.pricing-cta {
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2);
+  padding:var(--space-4) var(--space-10); border-radius:var(--radius-full);
+  background:var(--color-primary); color:#fff; font-family:var(--font-display);
+  font-weight:700; font-size:var(--text-base); border:none; cursor:pointer;
+  transition:all var(--transition-interactive); min-width:200px;
+}
+.pricing-cta:hover { background:var(--color-primary-hover); transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+.pricing-cta svg { flex-shrink:0; }
+.pricing-features {
+  display:flex; flex-direction:column; gap:var(--space-2); margin-top:var(--space-6);
+  text-align:left; padding-top:var(--space-5); border-top:1px solid var(--color-divider);
+}
+.pricing-feature {
+  display:flex; align-items:center; gap:var(--space-2);
+  font-size:var(--text-sm); color:var(--color-text-muted);
+}
+.pricing-feature svg { width:16px; height:16px; color:var(--color-success); flex-shrink:0; }
+.pricing-footer {
+  font-size:var(--text-xs); color:var(--color-text-faint); text-align:center;
+}
+/* Token-Bar im Header */
+.token-bar {
+  display:none; align-items:center; gap:var(--space-2);
+  padding:var(--space-2) var(--space-3); border-radius:var(--radius-full);
+  background:var(--color-surface-offset); border:1px solid var(--color-border);
+  font-size:var(--text-xs); font-weight:600; color:var(--color-text-muted);
+}
+.token-bar.active { display:flex; }
+.token-count { color:var(--color-primary); font-weight:700; }
+
 /* ─── PRO MODE ─── */
 .pro-badge {
   display:none; padding:3px 10px; border-radius:var(--radius-full);
@@ -293,6 +403,51 @@ body.splash-active { overflow:hidden; }
 @keyframes splashLoad { 0% { transform:scaleX(0.08); opacity:0.35; } 100% { transform:scaleX(1); opacity:1; } }
 @keyframes splash-pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.85); } }
 
+/* Splash Controls (Lang + Theme) */
+.splash-controls {
+  position:absolute; top:1.25rem; right:1.25rem; z-index:10;
+  display:flex; align-items:center; gap:8px;
+}
+.splash-lang-toggle {
+  display:flex; align-items:center; gap:3px;
+  background:rgba(255,255,255,0.15); backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.2); border-radius:var(--radius-full); padding:3px;
+}
+.splash-lang-btn {
+  padding:4px 10px; border-radius:var(--radius-full); font-size:12px;
+  font-weight:700; letter-spacing:.04em; color:rgba(255,255,255,0.7);
+  border:none; background:transparent; cursor:pointer;
+  transition:all var(--transition-interactive);
+}
+.splash-lang-btn.active { background:rgba(255,255,255,0.9); color:#0f214c; }
+.splash-lang-btn:hover:not(.active) { color:#fff; background:rgba(255,255,255,0.12); }
+.splash-theme-btn {
+  width:34px; height:34px; border-radius:var(--radius-full);
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,0.15); backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8);
+  cursor:pointer; transition:all var(--transition-interactive);
+}
+.splash-theme-btn:hover { background:rgba(255,255,255,0.25); color:#fff; }
+/* Light-Theme Splash anpassen */
+[data-theme="light"] .splash-lang-toggle {
+  background:rgba(15,33,76,0.1); border-color:rgba(15,33,76,0.15);
+}
+[data-theme="light"] .splash-lang-btn { color:rgba(15,33,76,0.5); }
+[data-theme="light"] .splash-lang-btn.active { background:rgba(15,33,76,0.85); color:#fff; }
+[data-theme="light"] .splash-lang-btn:hover:not(.active) { color:#0f214c; background:rgba(15,33,76,0.08); }
+[data-theme="light"] .splash-theme-btn {
+  background:rgba(15,33,76,0.1); border-color:rgba(15,33,76,0.15); color:rgba(15,33,76,0.6);
+}
+[data-theme="light"] .splash-theme-btn:hover { background:rgba(15,33,76,0.18); color:#0f214c; }
+[data-theme="light"] .splash-screen {
+  background:
+    radial-gradient(circle at top left, rgba(108,165,255,0.18), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(33,71,170,0.12), transparent 30%),
+    linear-gradient(145deg, #e8eef6 0%, #c5d5f0 48%, #f0f4f8 100%);
+}
+[data-theme="light"] .splash-watermark { filter:grayscale(1) brightness(0.92) contrast(1.05); mix-blend-mode:multiply; }
+
 @media (max-width:980px) {
   .splash-shell { grid-template-columns:1fr; }
   .splash-portrait-panel { min-height:320px; max-height:380px; }
@@ -310,8 +465,19 @@ body.splash-active { overflow:hidden; }
 </head>
 <body>
 
-<!-- ═══ SPLASH SCREEN ═══ -->
+<!-- === SPLASH SCREEN === -->
 <div class="splash-screen" id="splashScreen">
+  <!-- Splash Controls: Lang + Theme -->
+  <div class="splash-controls">
+    <div class="splash-lang-toggle" role="group" aria-label="Language">
+      <button class="splash-lang-btn active" id="splashLangDe" onclick="setSplashLang('de')">DE</button>
+      <button class="splash-lang-btn" id="splashLangEn" onclick="setSplashLang('en')">EN</button>
+    </div>
+    <button class="splash-theme-btn" onclick="toggleThemeEarly()" aria-label="Theme">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+
   <div class="splash-watermark wm-1"><img src="/static/logo-dirk.jpg" alt=""></div>
   <div class="splash-watermark wm-2"><img src="/static/logo-dirk.jpg" alt=""></div>
   <div class="splash-watermark wm-3"><img src="/static/logo-dirk.jpg" alt=""></div>
@@ -336,23 +502,23 @@ body.splash-active { overflow:hidden; }
         </div>
       </div>
 
-      <h1 class="splash-title">JSON Wandler — Cross-Platform Skill Conversion</h1>
+      <h1 class="splash-title" id="splashTitle">JSON Wandler — Cross-Platform Skill Conversion</h1>
 
       <div class="splash-copy">
-        <p class="splash-text">ChatGPT-Konfigurationen strukturiert in produktionsreife Claude Skills, Gemini Gems, Grok System Prompts und Perplexity Spaces überführen.</p>
+        <p class="splash-text" id="splashText">ChatGPT-Konfigurationen strukturiert in produktionsreife Claude Skills, Gemini Gems, Grok System Prompts und Perplexity Spaces überführen.</p>
       </div>
 
       <div class="splash-points">
-        <div class="splash-point">Plattformgerechte Konvertierung mit Best-Practice-Mapping — kein manuelles Prompt-Rewriting mehr.</div>
-        <div class="splash-point">Regelbasierte Transformation mit optionaler KI-Veredelung über OpenAI- oder Anthropic-API.</div>
-        <div class="splash-point">Export-ready: Ergebnisse direkt als Skill, Gem oder System Prompt einsatzbereit.</div>
+        <div class="splash-point" id="splashPoint1">Plattformgerechte Konvertierung mit Best-Practice-Mapping — kein manuelles Prompt-Rewriting mehr.</div>
+        <div class="splash-point" id="splashPoint2">Regelbasierte Transformation mit optionaler KI-Veredelung über OpenAI- oder Anthropic-API.</div>
+        <div class="splash-point" id="splashPoint3">Export-ready: Ergebnisse direkt als Skill, Gem oder System Prompt einsatzbereit.</div>
       </div>
 
       <div class="splash-footer">
         <div class="splash-status">
           <div class="splash-status-line">
             <span class="splash-status-dot"></span>
-            Transformer wird initialisiert
+            <span id="splashStatus">Transformer wird initialisiert</span>
           </div>
           <div class="splash-progress"><span></span></div>
         </div>
@@ -363,7 +529,59 @@ body.splash-active { overflow:hidden; }
 </div>
 
 <script>
+/* ── Early: Theme + Lang (vor allem anderen) ──────────────────────────── */
+var _earlyLang = localStorage.getItem('jw-lang') || 'de';
+var _earlyTheme = localStorage.getItem('jw-theme') || 'dark';
+document.documentElement.setAttribute('data-theme', _earlyTheme);
+
+/* Splash-Texte DE/EN */
+var SPLASH_TEXTS = {
+  de: {
+    title:    'JSON Wandler \u2014 Cross-Platform Skill Conversion',
+    text:     'ChatGPT-Konfigurationen strukturiert in produktionsreife Claude Skills, Gemini Gems, Grok System Prompts und Perplexity Spaces \u00fcberf\u00fchren.',
+    point1:   'Plattformgerechte Konvertierung mit Best-Practice-Mapping \u2014 kein manuelles Prompt-Rewriting mehr.',
+    point2:   'Regelbasierte Transformation mit optionaler KI-Veredelung \u00fcber OpenAI- oder Anthropic-API.',
+    point3:   'Export-ready: Ergebnisse direkt als Skill, Gem oder System Prompt einsatzbereit.',
+    status:   'Transformer wird initialisiert'
+  },
+  en: {
+    title:    'JSON Wandler \u2014 Cross-Platform Skill Conversion',
+    text:     'Convert ChatGPT configurations into production-ready Claude Skills, Gemini Gems, Grok System Prompts and Perplexity Spaces.',
+    point1:   'Platform-specific conversion with best-practice mapping \u2014 no more manual prompt rewriting.',
+    point2:   'Rule-based transformation with optional AI refinement via OpenAI or Anthropic API.',
+    point3:   'Export-ready: Results instantly usable as Skill, Gem or System Prompt.',
+    status:   'Transformer is initializing'
+  }
+};
+
+function applySplashLang(lang) {
+  var t = SPLASH_TEXTS[lang] || SPLASH_TEXTS.de;
+  var el;
+  if (el = document.getElementById('splashTitle'))  el.textContent = t.title;
+  if (el = document.getElementById('splashText'))   el.textContent = t.text;
+  if (el = document.getElementById('splashPoint1')) el.textContent = t.point1;
+  if (el = document.getElementById('splashPoint2')) el.textContent = t.point2;
+  if (el = document.getElementById('splashPoint3')) el.textContent = t.point3;
+  if (el = document.getElementById('splashStatus')) el.textContent = t.status;
+  document.getElementById('splashLangDe').classList.toggle('active', lang === 'de');
+  document.getElementById('splashLangEn').classList.toggle('active', lang === 'en');
+}
+
+function setSplashLang(lang) {
+  _earlyLang = lang;
+  localStorage.setItem('jw-lang', lang);
+  applySplashLang(lang);
+}
+
+function toggleThemeEarly() {
+  var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('jw-theme', next);
+}
+
+/* Splash anzeigen + nach 5s ausblenden */
 (function() {
+  applySplashLang(_earlyLang);
   document.body.classList.add('splash-active');
   setTimeout(function() {
     var s = document.getElementById('splashScreen');
@@ -373,7 +591,67 @@ body.splash-active { overflow:hidden; }
 })();
 </script>
 
-<div class="app">
+<!-- === PRICING SCREEN (nach Splash, vor App) === -->
+<div class="pricing-screen" id="pricingScreen">
+  <div class="pricing-shell">
+
+    <div class="pricing-brand">
+      <img src="/static/logo-dirk.jpg" alt="Dr. DirKInstitute">
+      <div>
+        <div class="pricing-brand-text">JSON Wandler</div>
+        <div class="pricing-brand-sub">Dr. DirKInstitute</div>
+      </div>
+    </div>
+
+    <div class="pricing-headline" id="pricingTitle">GPT Transformationen sichern</div>
+    <div class="pricing-desc" id="pricingSubtitle">Wie viele GPTs m&ouml;chtest du transformieren? Gib die Anzahl ein, der Preis wird automatisch berechnet.</div>
+
+    <div class="pricing-card">
+      <div class="pricing-unit-label" id="pricingUnitLabel">Anzahl deiner GPT-Transformationen</div>
+      <div class="pricing-unit-price">1,00 &euro; <span id="pricingPerUnit">pro Transformation</span></div>
+
+      <div class="quantity-picker">
+        <button class="qty-btn" id="qtyMinus" onclick="changeQty(-1)" disabled aria-label="Minus">&minus;</button>
+        <input type="number" class="qty-input" id="qtyInput" value="1" min="1" max="999" onchange="updateQty()" onkeyup="updateQty()">
+        <button class="qty-btn" id="qtyPlus" onclick="changeQty(1)" aria-label="Plus">+</button>
+      </div>
+
+      <div class="pricing-total" id="pricingTotal">1,00 &euro;</div>
+      <div class="pricing-vat">zzgl. 19 % MwSt.</div>
+
+      <button class="pricing-cta" id="pricingCta" onclick="startCheckout()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <span id="pricingCtaLabel">W&auml;hlen</span>
+      </button>
+
+      <div class="pricing-features">
+        <div class="pricing-feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="feat1">Nachfolgende Zielformate: Claude-Skills, Gemini-Gems, Grok, Perplexity</span>
+        </div>
+        <div class="pricing-feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="feat2">KI-optimierte Transformation via GPT-4o / Claude</span>
+        </div>
+        <div class="pricing-feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="feat3">Sofortiger Download als Skill, Gem oder System Prompt</span>
+        </div>
+        <div class="pricing-feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="feat4">Rechnung und Token per E-Mail und sofort einsatzbereit</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pricing-footer">
+      <span id="pricingFooter">Sichere Zahlung via Stripe &middot; Rechnung inkl. MwSt. &middot; Sofortiger Zugang</span>
+    </div>
+
+  </div>
+</div>
+
+<div class="app" id="appMain" style="display:none">
   <header>
     <!-- k & n edv konzepte gmbh Logo (links) -->
     <div style="display:flex;align-items:center">
@@ -422,7 +700,7 @@ body.splash-active { overflow:hidden; }
 
         <!-- PRO MODE: Provider Selection (visible only in OWNER_MODE) -->
         <div class="pro-provider-select" id="proProviderSelect">
-          <label>🔑 KI-Provider (Server-Side Keys)</label>
+          <label>ðŸ”‘ KI-Provider (Server-Side Keys)</label>
           <div class="pro-provider-btns">
             <button class="pro-provider-btn active" onclick="setProProvider('openai',this)">OpenAI · gpt-4o</button>
             <button class="pro-provider-btn" onclick="setProProvider('anthropic',this)">Anthropic · Claude</button>
@@ -617,12 +895,12 @@ const TEXTS = {
     skillStep1:        'SKILL.md herunterladen (Button oben)',
     skillStep2:        'claude.ai im Browser öffnen',
     skillStep3:        'Anpassen → Skills → + → <strong>Skill hochladen</strong>',
-    skillStep4:        'SKILL.md auswählen → fertig ✓',
+    skillStep4:        'SKILL.md ausw?hlen ? fertig ?',
     gemInstallTitle:   'Als Gemini Gem einrichten',
     gemStep1:          'Text oben kopieren (Button "Kopieren")',
     gemStep2:          'gemini.google.com öffnen',
     gemStep3:          'Links im Menü: <strong>Gem-Manager</strong> öffnen',
-    gemStep4:          '+ Neues Gem → Feld "Anweisungen schreiben" → Text einfügen',
+    gemStep4:          '+ Neues Gem ? Feld \"Anweisungen schreiben\" ? Text einf?gen',
     gemStep5:          'Namen vergeben → <strong>Erstellen</strong> → fertig ✓',
     pasteHint:         'Bitte Ctrl+V zum Einf\u00fcgen verwenden',
     fileLoaded:        'Datei geladen',
@@ -639,6 +917,17 @@ const TEXTS = {
     sampleLoaded:      function(t){ return t + ' Beispiel geladen'; },
     hintOpenAI:        'OpenAI API Key \u2014 <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>Modell: gpt-4o. Der Key bleibt nur im Browser-Memory.',
     hintAnthropic:     'Anthropic API Key \u2014 <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a><br>Modell: claude-sonnet-4. Der Key bleibt nur im Browser-Memory.',
+    /* Pricing */
+    pricingTitle:      'GPT Transformationen sichern',
+    pricingSubtitle:   'Wie viele GPTs m\u00f6chtest du transformieren? Gib die Anzahl ein \u2013 der Preis wird automatisch berechnet.',
+    pricingUnitLabel:  'Anzahl deiner GPT-Transformationen',
+    pricingPerUnit:    'pro Transformation',
+    pricingCta:        'W\u00e4hlen',
+    feat1:             'Nachfolgende Zielformate: Claude-Skills, Gemini-Gems, Grok, Perplexity',
+    feat2:             'KI-optimierte Transformation via GPT-4o / Claude',
+    feat3:             'Sofortiger Download als Skill, Gem oder System Prompt',
+    feat4:             'Rechnung per E-Mail \u2013 sofort einsatzbereit',
+    pricingFooter:     'Sichere Zahlung via Stripe \u00b7 Rechnung inkl. MwSt. \u00b7 Sofortiger Zugang',
   },
   en: {
     subtitle:          'Automatically transforms ChatGPT Custom GPTs into ready-to-use formats for Claude\u2011SKILL, Gemini\u2011GEMS, Grok and Perplexity',
@@ -684,12 +973,12 @@ const TEXTS = {
     skillStep1:        'Download SKILL.md (button above)',
     skillStep2:        'Open claude.ai in your browser',
     skillStep3:        'Customize → Skills → + → <strong>Upload skill</strong>',
-    skillStep4:        'Select SKILL.md → done ✓',
+    skillStep4:        'SKILL.md ausw?hlen ? fertig ?',
     gemInstallTitle:   'Set up as Gemini Gem',
     gemStep1:          'Copy the text above (Copy button)',
     gemStep2:          'Open gemini.google.com',
     gemStep3:          'In the left menu: open <strong>Gem Manager</strong>',
-    gemStep4:          '+ New Gem → "Write instructions" field → paste text',
+    gemStep4:          '+ Neues Gem ? Feld \"Anweisungen schreiben\" ? Text einf?gen',
     gemStep5:          'Enter a name → <strong>Create</strong> → done ✓',
     pasteHint:         'Please use Ctrl+V to paste',
     fileLoaded:        'File loaded',
@@ -706,6 +995,17 @@ const TEXTS = {
     sampleLoaded:      function(t){ return t + ' sample loaded'; },
     hintOpenAI:        'OpenAI API Key \u2014 <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a><br>Model: gpt-4o. Key is stored in browser memory only.',
     hintAnthropic:     'Anthropic API Key \u2014 <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a><br>Model: claude-sonnet-4. Key is stored in browser memory only.',
+    /* Pricing */
+    pricingTitle:      'Secure GPT Transformations',
+    pricingSubtitle:   'How many GPTs do you want to transform? Enter the quantity \u2013 the price is calculated automatically.',
+    pricingUnitLabel:  'Number of GPT transformations',
+    pricingPerUnit:    'per transformation',
+    pricingCta:        'Select',
+    feat1:             'Target formats: Claude Skills, Gemini Gems, Grok, Perplexity',
+    feat2:             'AI-optimized transformation via GPT-4o / Claude',
+    feat3:             'Instant download as Skill, Gem or System Prompt',
+    feat4:             'Invoice via email \u2013 ready to use immediately',
+    pricingFooter:     'Secure payment via Stripe \u00b7 Invoice incl. VAT \u00b7 Instant access',
   }
 };
 
@@ -773,8 +1073,58 @@ const bestPracticesAll = {
   }
 };
 
+/* ── Pricing / Quantity / Checkout ─────────────────────────────────────── */
+const UNIT_PRICE = 1.00;
+
+function changeQty(delta) {
+  const inp = document.getElementById('qtyInput');
+  let v = Math.max(1, Math.min(999, (parseInt(inp.value) || 1) + delta));
+  inp.value = v;
+  updatePricing(v);
+}
+
+function updateQty() {
+  const inp = document.getElementById('qtyInput');
+  let v = parseInt(inp.value) || 1;
+  if (v < 1) v = 1;
+  if (v > 999) v = 999;
+  inp.value = v;
+  updatePricing(v);
+}
+
+function updatePricing(qty) {
+  const total = (qty * UNIT_PRICE).toFixed(2).replace('.', ',');
+  document.getElementById('pricingTotal').textContent = total + ' \u20AC';
+  document.getElementById('qtyMinus').disabled = qty <= 1;
+}
+
+function startCheckout() {
+  const qty = parseInt(document.getElementById('qtyInput').value) || 1;
+  // TODO: POST an /api/create-checkout-session → Stripe Checkout URL → redirect
+  // Platzhalter bis Stripe angebunden:
+  toast('Stripe Checkout wird vorbereitet (' + qty + ' Credits)\u2026', 'success');
+}
+
+function showApp() {
+  document.getElementById('pricingScreen').classList.add('is-hidden');
+  var app = document.getElementById('appMain');
+  app.style.display = '';
+}
+
+/* Token aus URL lesen (?token=xxx) */
+function checkToken() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if (token) {
+    state.token = token;
+    showApp();
+    return true;
+  }
+  return false;
+}
+
 /* ── State ─────────────────────────────────────────────────────────────── */
-let state = { platform: 'claude', apiKey: null, apiProvider: 'openai', output: null, lang: 'de', ownerMode: false };
+let state = { platform: 'claude', apiKey: null, apiProvider: 'openai', output: null, lang: _earlyLang || 'de', ownerMode: false };
 
 /* ── Owner Mode Init ──────────────────────────────────────────────────── */
 (async function initOwnerMode() {
@@ -784,8 +1134,15 @@ let state = { platform: 'claude', apiKey: null, apiProvider: 'openai', output: n
     if (cfg.ownerMode) {
       state.ownerMode = true;
       document.body.classList.add('owner-mode');
+      showApp(); // PRO: Pricing überspringen
+      return;
     }
   } catch(e) { /* public mode fallback */ }
+  // Public Mode: Token pr?fen ? wenn vorhanden, App zeigen
+  if (!checkToken()) {
+    // Kein Token → Pricing-Screen bleibt sichtbar (nach Splash)
+    document.getElementById('pricingScreen').style.display = '';
+  }
 })();
 
 function setProProvider(provider, btn) {
@@ -819,6 +1176,7 @@ const platformColors  = { claude: 'badge-claude', gemini: 'badge-gemini', grok: 
 function setLang(lang) {
   state.lang = lang;
   document.documentElement.lang = lang;
+  localStorage.setItem('jw-lang', lang);
   applyLang();
 }
 
@@ -854,6 +1212,18 @@ function applyLang() {
   document.getElementById('practicesTogglePost').textContent = t.practicesPost;
   document.getElementById('transformBtnLabel').textContent = t.transformBtn;
 
+  /* Pricing */
+  document.getElementById('pricingTitle').textContent      = t.pricingTitle;
+  document.getElementById('pricingSubtitle').textContent   = t.pricingSubtitle;
+  document.getElementById('pricingUnitLabel').textContent  = t.pricingUnitLabel;
+  document.getElementById('pricingPerUnit').textContent    = t.pricingPerUnit;
+  document.getElementById('pricingCtaLabel').textContent   = t.pricingCta;
+  if (t.feat1) document.getElementById('feat1').textContent = t.feat1;
+  if (t.feat2) document.getElementById('feat2').textContent = t.feat2;
+  if (t.feat3) document.getElementById('feat3').textContent = t.feat3;
+  if (t.feat4) document.getElementById('feat4').textContent = t.feat4;
+  if (t.pricingFooter) document.getElementById('pricingFooter').textContent = t.pricingFooter;
+
   /* Output panel */
   document.getElementById('panelOutputTitle').textContent = t.panelOutput;
   document.getElementById('emptyStateTitle').textContent  = t.emptyTitle;
@@ -881,6 +1251,7 @@ function applyLang() {
   if(t) t.addEventListener('click',()=>{
     d=d==='dark'?'light':'dark';
     r.setAttribute('data-theme',d);
+    localStorage.setItem('jw-theme',d);
     updateToggleIcon(d,t);
   });
   function updateToggleIcon(theme,btn){
@@ -1466,7 +1837,11 @@ async function pasteFromClipboard() {
 }
 
 /* ── Init ───────────────────────────────────────────────────────────────── */
-updatePractices();
+document.documentElement.lang = state.lang;
+applyLang();
 </script>
 </body>
 </html>
+
+
+
