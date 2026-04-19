@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
@@ -254,8 +254,53 @@ select option{background:var(--color-surface)}
   font-size:var(--text-sm); color:var(--color-text-muted);
 }
 .pricing-feature svg { width:16px; height:16px; color:var(--color-success); flex-shrink:0; }
-.pricing-footer {
-  font-size:var(--text-xs); color:var(--color-text-faint); text-align:center;
+
+.billing-form {
+  margin-top: var(--space-5);
+  display: grid;
+  gap: var(--space-3);
+  text-align: left;
+}
+.billing-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: var(--space-1);
+}
+.billing-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+.billing-toggle-btn {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-offset);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+.billing-toggle-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+.billing-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+.billing-form label {
+  margin-bottom: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.billing-note {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+}
+@media (max-width: 700px) {
+  .billing-grid-2 { grid-template-columns: 1fr; }
 }
 /* Token-Bar im Header */
 .token-bar {
@@ -592,7 +637,7 @@ function toggleThemeEarly() {
 </script>
 
 <!-- === PRICING SCREEN (nach Splash, vor App) === -->
-<div class="pricing-screen" id="pricingScreen">
+<div class="pricing-screen is-hidden" id="pricingScreen" style="display:none">
   <div class="pricing-shell">
 
     <div class="pricing-brand">
@@ -608,7 +653,7 @@ function toggleThemeEarly() {
 
     <div class="pricing-card">
       <div class="pricing-unit-label" id="pricingUnitLabel">Anzahl deiner GPT-Transformationen</div>
-      <div class="pricing-unit-price">1,00 &euro; <span id="pricingPerUnit">pro Transformation</span></div>
+      <div class="pricing-unit-price">1,20 &euro; <span id="pricingPerUnit">netto pro Transformation</span></div>
 
       <div class="quantity-picker">
         <button class="qty-btn" id="qtyMinus" onclick="changeQty(-1)" disabled aria-label="Minus">&minus;</button>
@@ -616,12 +661,78 @@ function toggleThemeEarly() {
         <button class="qty-btn" id="qtyPlus" onclick="changeQty(1)" aria-label="Plus">+</button>
       </div>
 
-      <div class="pricing-total" id="pricingTotal">1,00 &euro;</div>
-      <div class="pricing-vat">zzgl. 19 % MwSt.</div>
+            <div class="pricing-total" id="pricingTotal">1,43 &euro;</div>
+      <div class="pricing-vat" id="pricingVat">inkl. 19 % MwSt.</div>
+
+      <div class="billing-form">
+        <div class="billing-title">Rechnungsadresse</div>
+        <div class="billing-toggle">
+          <button type="button" id="billingTypeCompany" class="billing-toggle-btn active" onclick="setBillingType('company')">Firma</button>
+          <button type="button" id="billingTypePrivate" class="billing-toggle-btn" onclick="setBillingType('private')">Privatperson</button>
+        </div>
+
+        <div id="billingCompanyFields">
+          <label>Firmenname *</label>
+          <input id="billingCompany" type="text" placeholder="Musterfirma GmbH"/>
+          <label>USt-ID (optional)</label>
+          <input id="billingVatId" type="text" placeholder="DE123456789"/>
+        </div>
+
+        <div id="billingPrivateFields" style="display:none">
+          <div class="billing-grid-2">
+            <div>
+              <label>Vorname *</label>
+              <input id="billingFirstName" type="text" placeholder="Max"/>
+            </div>
+            <div>
+              <label>Nachname *</label>
+              <input id="billingLastName" type="text" placeholder="Mustermann"/>
+            </div>
+          </div>
+        </div>
+
+        <label>Stra&szlig;e &amp; Hausnummer *</label>
+        <input id="billingStreet" type="text" placeholder="Musterstra&szlig;e 42"/>
+
+        <div class="billing-grid-2">
+          <div>
+            <label>PLZ *</label>
+            <input id="billingZip" type="text" placeholder="80331"/>
+          </div>
+          <div>
+            <label>Ort *</label>
+            <input id="billingCity" type="text" placeholder="M&uuml;nchen"/>
+          </div>
+        </div>
+
+        <label>Land *</label>
+        <select id="billingCountry" onchange="updateQty()">
+          <option value="DE">Deutschland</option>
+          <option value="AT">&Ouml;sterreich</option>
+          <option value="CH">Schweiz</option>
+          <option value="NL">Niederlande</option>
+          <option value="BE">Belgien</option>
+          <option value="FR">Frankreich</option>
+          <option value="IT">Italien</option>
+          <option value="ES">Spanien</option>
+          <option value="PL">Polen</option>
+          <option value="US">USA</option>
+          <option value="GB">United Kingdom</option>
+          <option value="OTHER">Anderes Land</option>
+        </select>
+
+        <label>E-Mail-Adresse *</label>
+        <input id="billingEmail" type="email" placeholder="max@beispiel.de"/>
+
+        <label>Telefonnummer (optional)</label>
+        <input id="billingPhone" type="text" placeholder="+49 89 123456"/>
+
+        <div class="billing-note">Sichere Zahlung via Stripe &middot; Rechnung per E-Mail</div>
+      </div>
 
       <button class="pricing-cta" id="pricingCta" onclick="startCheckout()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        <span id="pricingCtaLabel">W&auml;hlen</span>
+        <span id="pricingCtaLabel">Jetzt kaufen</span>
       </button>
 
       <div class="pricing-features">
@@ -674,6 +785,12 @@ function toggleThemeEarly() {
         <button class="btn-icon" data-theme-toggle aria-label="Farbschema wechseln">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
+        <!-- Token Credit Bar -->
+        <div class="token-bar" id="tokenBar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span>Credits:</span>
+          <span class="token-count" id="tokenCredits">0/0</span>
+        </div>
       </div>
     </div>
 
@@ -700,7 +817,7 @@ function toggleThemeEarly() {
 
         <!-- PRO MODE: Provider Selection (visible only in OWNER_MODE) -->
         <div class="pro-provider-select" id="proProviderSelect">
-          <label>ðŸ”‘ KI-Provider (Server-Side Keys)</label>
+          <label>🔑 KI-Provider (Server-Side Keys)</label>
           <div class="pro-provider-btns">
             <button class="pro-provider-btn active" onclick="setProProvider('openai',this)">OpenAI · gpt-4o</button>
             <button class="pro-provider-btn" onclick="setProProvider('anthropic',this)">Anthropic · Claude</button>
@@ -895,12 +1012,12 @@ const TEXTS = {
     skillStep1:        'SKILL.md herunterladen (Button oben)',
     skillStep2:        'claude.ai im Browser öffnen',
     skillStep3:        'Anpassen → Skills → + → <strong>Skill hochladen</strong>',
-    skillStep4:        'SKILL.md ausw?hlen ? fertig ?',
+    skillStep4:        'SKILL.md auswählen → fertig.',
     gemInstallTitle:   'Als Gemini Gem einrichten',
     gemStep1:          'Text oben kopieren (Button "Kopieren")',
     gemStep2:          'gemini.google.com öffnen',
     gemStep3:          'Links im Menü: <strong>Gem-Manager</strong> öffnen',
-    gemStep4:          '+ Neues Gem ? Feld \"Anweisungen schreiben\" ? Text einf?gen',
+    gemStep4:          '+ Neues Gem → Feld "Anweisungen schreiben" → Text einfügen',
     gemStep5:          'Namen vergeben → <strong>Erstellen</strong> → fertig ✓',
     pasteHint:         'Bitte Ctrl+V zum Einf\u00fcgen verwenden',
     fileLoaded:        'Datei geladen',
@@ -919,15 +1036,20 @@ const TEXTS = {
     hintAnthropic:     'Anthropic API Key \u2014 <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a><br>Modell: claude-sonnet-4. Der Key bleibt nur im Browser-Memory.',
     /* Pricing */
     pricingTitle:      'GPT Transformationen sichern',
-    pricingSubtitle:   'Wie viele GPTs m\u00f6chtest du transformieren? Gib die Anzahl ein \u2013 der Preis wird automatisch berechnet.',
+    pricingSubtitle:   'Wie viele GPTs m\u00f6chtest du transformieren? Preisbasis: 1,20 \u20ac netto pro Transformation, zzgl. MwSt. des Landes.',
     pricingUnitLabel:  'Anzahl deiner GPT-Transformationen',
-    pricingPerUnit:    'pro Transformation',
-    pricingCta:        'W\u00e4hlen',
+    pricingPerUnit:    'netto pro Transformation',
+    pricingCta:        'Jetzt kaufen',
     feat1:             'Nachfolgende Zielformate: Claude-Skills, Gemini-Gems, Grok, Perplexity',
     feat2:             'KI-optimierte Transformation via GPT-4o / Claude',
     feat3:             'Sofortiger Download als Skill, Gem oder System Prompt',
     feat4:             'Rechnung per E-Mail \u2013 sofort einsatzbereit',
     pricingFooter:     'Sichere Zahlung via Stripe \u00b7 Rechnung inkl. MwSt. \u00b7 Sofortiger Zugang',
+    paymentSuccess:    'Zahlung erfolgreich! Dein Token kommt per E-Mail.',
+    paymentSuccessActivate: 'Zahlung erfolgreich. Bitte Token aus der E-Mail eingeben oder den Aktivierungslink nutzen.',
+    paymentCancelled:  'Zahlung abgebrochen.',
+    creditsEmpty:      'Credits aufgebraucht! Bitte neue kaufen.',
+    tokenRequired:     'Bitte zuerst den Aktivierungs-Token eingeben.',
   },
   en: {
     subtitle:          'Automatically transforms ChatGPT Custom GPTs into ready-to-use formats for Claude\u2011SKILL, Gemini\u2011GEMS, Grok and Perplexity',
@@ -973,12 +1095,12 @@ const TEXTS = {
     skillStep1:        'Download SKILL.md (button above)',
     skillStep2:        'Open claude.ai in your browser',
     skillStep3:        'Customize → Skills → + → <strong>Upload skill</strong>',
-    skillStep4:        'SKILL.md ausw?hlen ? fertig ?',
+    skillStep4:        'Select SKILL.md → done.',
     gemInstallTitle:   'Set up as Gemini Gem',
     gemStep1:          'Copy the text above (Copy button)',
     gemStep2:          'Open gemini.google.com',
     gemStep3:          'In the left menu: open <strong>Gem Manager</strong>',
-    gemStep4:          '+ Neues Gem ? Feld \"Anweisungen schreiben\" ? Text einf?gen',
+    gemStep4:          '+ New Gem → "Write instructions" field → paste text',
     gemStep5:          'Enter a name → <strong>Create</strong> → done ✓',
     pasteHint:         'Please use Ctrl+V to paste',
     fileLoaded:        'File loaded',
@@ -997,15 +1119,20 @@ const TEXTS = {
     hintAnthropic:     'Anthropic API Key \u2014 <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a><br>Model: claude-sonnet-4. Key is stored in browser memory only.',
     /* Pricing */
     pricingTitle:      'Secure GPT Transformations',
-    pricingSubtitle:   'How many GPTs do you want to transform? Enter the quantity \u2013 the price is calculated automatically.',
+    pricingSubtitle:   'How many GPTs do you want to transform? Base price: 1.20 \u20ac net per transformation, plus country VAT.',
     pricingUnitLabel:  'Number of GPT transformations',
-    pricingPerUnit:    'per transformation',
-    pricingCta:        'Select',
+    pricingPerUnit:    'net per transformation',
+    pricingCta:        'Buy now',
     feat1:             'Target formats: Claude Skills, Gemini Gems, Grok, Perplexity',
     feat2:             'AI-optimized transformation via GPT-4o / Claude',
     feat3:             'Instant download as Skill, Gem or System Prompt',
     feat4:             'Invoice via email \u2013 ready to use immediately',
     pricingFooter:     'Secure payment via Stripe \u00b7 Invoice incl. VAT \u00b7 Instant access',
+    paymentSuccess:    'Payment successful! Your token will arrive via email.',
+    paymentSuccessActivate: 'Payment successful. Please enter your token from the email or use the activation link.',
+    paymentCancelled:  'Payment cancelled.',
+    creditsEmpty:      'Credits used up! Please purchase more.',
+    tokenRequired:     'Please enter your activation token first.',
   }
 };
 
@@ -1074,7 +1201,27 @@ const bestPracticesAll = {
 };
 
 /* ── Pricing / Quantity / Checkout ─────────────────────────────────────── */
-const UNIT_PRICE = 1.00;
+const UNIT_PRICE = 1.20; // net
+const VAT_BY_COUNTRY = {
+  AT: 0.20, BE: 0.21, BG: 0.20, CY: 0.19, CZ: 0.21, DE: 0.19, DK: 0.25,
+  EE: 0.24, ES: 0.21, FI: 0.255, FR: 0.20, GR: 0.24, HR: 0.25, HU: 0.27,
+  IE: 0.23, IT: 0.22, LT: 0.21, LU: 0.17, LV: 0.21, MT: 0.18, NL: 0.21,
+  PL: 0.23, PT: 0.23, RO: 0.21, SE: 0.25, SI: 0.22, SK: 0.23,
+};
+let billingType = 'company';
+
+function setBillingType(type) {
+  billingType = (type === 'private') ? 'private' : 'company';
+  document.getElementById('billingTypeCompany').classList.toggle('active', billingType === 'company');
+  document.getElementById('billingTypePrivate').classList.toggle('active', billingType === 'private');
+  document.getElementById('billingCompanyFields').style.display = billingType === 'company' ? '' : 'none';
+  document.getElementById('billingPrivateFields').style.display = billingType === 'private' ? '' : 'none';
+}
+
+function getVatRateForCountry(country) {
+  const code = (country || 'DE').toUpperCase();
+  return VAT_BY_COUNTRY[code] ?? 0;
+}
 
 function changeQty(delta) {
   const inp = document.getElementById('qtyInput');
@@ -1093,34 +1240,156 @@ function updateQty() {
 }
 
 function updatePricing(qty) {
-  const total = (qty * UNIT_PRICE).toFixed(2).replace('.', ',');
-  document.getElementById('pricingTotal').textContent = total + ' \u20AC';
+  const country = document.getElementById('billingCountry')?.value || 'DE';
+  const net = qty * UNIT_PRICE;
+  const vatRate = getVatRateForCountry(country);
+  const gross = net + (net * vatRate);
+  document.getElementById('pricingTotal').textContent = gross.toFixed(2).replace('.', ',') + ' \u20AC';
+  document.getElementById('pricingVat').textContent = `inkl. ${Math.round(vatRate * 100)} % MwSt.`;
   document.getElementById('qtyMinus').disabled = qty <= 1;
 }
 
-function startCheckout() {
-  const qty = parseInt(document.getElementById('qtyInput').value) || 1;
-  // TODO: POST an /api/create-checkout-session → Stripe Checkout URL → redirect
-  // Platzhalter bis Stripe angebunden:
-  toast('Stripe Checkout wird vorbereitet (' + qty + ' Credits)\u2026', 'success');
+function buildBillingPayload() {
+  const billing = {
+    type: billingType,
+    company: document.getElementById('billingCompany').value.trim(),
+    vatId: document.getElementById('billingVatId').value.trim(),
+    firstName: document.getElementById('billingFirstName').value.trim(),
+    lastName: document.getElementById('billingLastName').value.trim(),
+    street: document.getElementById('billingStreet').value.trim(),
+    zip: document.getElementById('billingZip').value.trim(),
+    city: document.getElementById('billingCity').value.trim(),
+    country: document.getElementById('billingCountry').value.trim(),
+    email: document.getElementById('billingEmail').value.trim(),
+    phone: document.getElementById('billingPhone').value.trim(),
+  };
+
+  if (billing.type === 'company' && !billing.company) throw new Error('Bitte Firmenname eingeben');
+  if (billing.type === 'private' && !billing.firstName) throw new Error('Bitte Vorname eingeben');
+  if (billing.type === 'private' && !billing.lastName) throw new Error('Bitte Nachname eingeben');
+  if (!billing.street || !billing.zip || !billing.city || !billing.country || !billing.email) {
+    throw new Error('Bitte Rechnungsdaten vollständig ausfüllen');
+  }
+  if (!/^\S+@\S+\.\S+$/.test(billing.email)) throw new Error('Bitte gültige E-Mail eingeben');
+
+  return billing;
 }
 
-function showApp() {
+async function startCheckout() {
+  const qty = parseInt(document.getElementById('qtyInput').value) || 1;
+  const btn = document.getElementById('pricingCta');
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+
+  let billing;
+  try {
+    billing = buildBillingPayload();
+  } catch (err) {
+    toast(err.message || 'Bitte Rechnungsdaten prüfen', 'error');
+    btn.disabled = false;
+    btn.style.opacity = '';
+    return;
+  }
+
+  try {
+    const resp = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quantity: qty, billing })
+    });
+    const data = await resp.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      toast(data.error || 'Checkout-Fehler', 'error');
+      btn.disabled = false;
+      btn.style.opacity = '';
+    }
+  } catch(e) {
+    toast('Verbindungsfehler: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.style.opacity = '';
+  }
+}
+
+function showApp(creditsInfo) {
   document.getElementById('pricingScreen').classList.add('is-hidden');
   var app = document.getElementById('appMain');
   app.style.display = '';
+  if (creditsInfo && creditsInfo.credits_remaining !== undefined) {
+    var bar = document.getElementById('tokenBar');
+    if (bar) {
+      bar.classList.add('active');
+      document.getElementById('tokenCredits').textContent =
+        creditsInfo.credits_remaining + '/' + creditsInfo.credits_total;
+    }
+  }
 }
 
-/* Token aus URL lesen (?token=xxx) */
-function checkToken() {
+/* Token aus URL (?token=xxx) oder Stripe-Rückkehr (?session_id=xxx) */
+async function checkToken() {
   const params = new URLSearchParams(window.location.search);
+
+  /* Token direkt */
   const token = params.get('token');
   if (token) {
-    state.token = token;
-    showApp();
-    return true;
+    try {
+      const resp = await fetch('/api/validate-token?token=' + encodeURIComponent(token));
+      const data = await resp.json();
+      if (data.valid) {
+        state.token = token;
+        showApp(data);
+        window.history.replaceState({}, '', '/');
+        return true;
+      }
+    } catch(e) { /* fall through */ }
+  }
+  /* Zurueck von Stripe */
+  const sessionId = params.get('session_id');
+  if (sessionId) {
+    setTimeout(function() {
+      toast(TEXTS[state.lang].paymentSuccessActivate || 'Zahlung erfolgreich. Bitte Token aus der E-Mail eingeben.', 'success');
+    }, 200);
+    window.location.href = '/activate?session_id=' + encodeURIComponent(sessionId);
+    return false;
+  }
+
+  /* Abbruch */
+  if (params.get('cancelled')) {
+    toast(TEXTS[state.lang].paymentCancelled || 'Zahlung abgebrochen.', 'error');
+    window.history.replaceState({}, '', '/');
   }
   return false;
+}
+
+/* Credit verbrauchen */
+async function useCredit() {
+  if (!state.token) {
+    toast(TEXTS[state.lang].tokenRequired || 'Bitte zuerst den Aktivierungs-Token eingeben.', 'error');
+    return false;
+  }
+  try {
+    const resp = await fetch('/api/use-credit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: state.token })
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      var el = document.getElementById('tokenCredits');
+      if (el) el.textContent = data.credits_remaining + '/' + data.credits_total;
+      if (data.credits_remaining <= 0) {
+        toast(TEXTS[state.lang].creditsEmpty || 'Credits aufgebraucht!', 'error');
+      }
+      return true;
+    } else {
+      toast(data.error || 'Credit-Fehler', 'error');
+      return false;
+    }
+  } catch(e) {
+    toast('Verbindungsfehler: ' + e.message, 'error');
+    return false;
+  }
 }
 
 /* ── State ─────────────────────────────────────────────────────────────── */
@@ -1138,10 +1407,10 @@ let state = { platform: 'claude', apiKey: null, apiProvider: 'openai', output: n
       return;
     }
   } catch(e) { /* public mode fallback */ }
-  // Public Mode: Token pr?fen ? wenn vorhanden, App zeigen
-  if (!checkToken()) {
+  // Public Mode: Token prüfen; wenn vorhanden, App zeigen
+  if (!(await checkToken())) {
     // Kein Token → Pricing-Screen bleibt sichtbar (nach Splash)
-    document.getElementById('pricingScreen').style.display = '';
+    showApp();
   }
 })();
 
@@ -1660,6 +1929,14 @@ async function transform() {
       result = transformRuleBased(parsed);
     }
 
+    if (!state.ownerMode) {
+      const creditOk = await useCredit();
+      if (!creditOk) {
+        showStatus('error', t.creditsEmpty || 'Credits aufgebraucht! Bitte neue kaufen.');
+        return;
+      }
+    }
+
     state.output = result;
     showOutput(result);
     showStatus('success', t.successTransform(platformLabels[state.platform], useAI));
@@ -1842,6 +2119,7 @@ applyLang();
 </script>
 </body>
 </html>
+
 
 
 
